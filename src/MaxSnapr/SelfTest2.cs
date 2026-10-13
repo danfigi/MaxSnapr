@@ -461,6 +461,61 @@ public static partial class SelfTest
         finally { w.Close(); }
     }
 
+    /// <summary>
+    /// Every icon in the main windows must have a glyph, and that glyph must exist in the icon font:
+    /// an empty or unknown code shows nothing although the button still works.
+    /// </summary>
+    static async Task IconCheck(string outDir)
+    {
+        var fonts = new[] { "Segoe Fluent Icons", "Segoe MDL2 Assets" }
+            .Select(f => new Typeface(f).TryGetGlyphTypeface(out var g) ? g : null).Where(g => g != null).ToList();
+        var problems = new List<string>();
+        var perWindow = new Dictionary<string, int>();
+        var seen = new HashSet<DependencyObject>();
+        int icons = 0;
+        // Logical tree for content not yet templated, visual tree for what templates generate.
+        void Scan(DependencyObject node, string window)
+        {
+            if (!seen.Add(node)) return;
+            if (node is System.Windows.Controls.TextBlock tb && (tb.FontFamily.Source.Contains("Fluent") || tb.FontFamily.Source.Contains("MDL2")))
+            {
+                icons++;
+                perWindow[window] = perWindow.GetValueOrDefault(window) + 1;
+                var where = (tb.Parent as FrameworkElement)?.ToolTip as string ?? tb.Text;
+                if (string.IsNullOrEmpty(tb.Text)) problems.Add($"{window}: icono vacío ({where})");
+                else if (fonts.Count > 0 && !tb.Text.All(c => fonts.Any(f => f!.CharacterToGlyphMap.ContainsKey(c))))
+                    problems.Add($"{window}: U+{(int)tb.Text[0]:X4} no existe en la fuente ({where})");
+            }
+            foreach (var child in LogicalTreeHelper.GetChildren(node).OfType<DependencyObject>()) Scan(child, window);
+            if (node is Visual or System.Windows.Media.Media3D.Visual3D)
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(node); i++) Scan(VisualTreeHelper.GetChild(node, i), window);
+        }
+
+        var widget = new EdgeWidget();
+        widget.Show();
+        widget.Expand();
+        await Pump(400);
+        Shot(widget, outDir, "38-edge-widget.png");
+        var session = Video.RecordingSession.ForPreview(new Int32Rect(60, 60, 900, 520), new Video.VideoSettings { Webcam = true, Microphone = true });
+        var setup = session.CreateSetup(monitors: false);
+        var windows = new (string, Window)[]
+        {
+            ("Widget del borde", widget), ("Bienvenida", new WelcomeWindow()), ("Editor", new EditorWindow { Width = 1200, Height = 800 }),
+            ("Ventana de captura", new CaptureWindow()), ("Preferencias", new SettingsWindow()), ("Barra de grabación", setup),
+        };
+        foreach (var (name, w) in windows)
+        {
+            if (!w.IsVisible) { w.Left = 0; w.Top = 0; w.WindowStartupLocation = WindowStartupLocation.Manual; w.Show(); }
+            await Pump(300);
+            Scan(w, name);
+            w.Close();
+        }
+        session.CloseTestPreview();
+        bool counted = perWindow.GetValueOrDefault("Widget del borde") >= 6 && perWindow.GetValueOrDefault("Bienvenida") >= 4;
+        Check("Todos los iconos se ven (widget, bienvenida, editor, captura, preferencias, grabación)", problems.Count == 0 && counted,
+            problems.Count == 0 ? $"{icons} iconos revisados: " + string.Join(", ", perWindow.Select(p => $"{p.Key} {p.Value}")) : string.Join("; ", problems.Take(6)));
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -498,5 +553,6 @@ public static partial class SelfTest
         CameraBackgroundChecks(outDir);
         await WebcamPositionCheck(outDir);
         await MobileServerCheck();
+        await IconCheck(outDir);
     }
 }

@@ -40,12 +40,12 @@ public sealed class EdgeWidget : Window
             b.Click += (_, _) => { Collapse(); a(); };
             _buttons.Children.Add(b);
         }
-        B("", "Capturar imagen", () => _ = App.Current.Capture.RunAsync(App.Settings.Current.AsImagePreset()));
-        B("", "Grabar vídeo", () => _ = App.Current.Capture.RunAsync(new CapturePreset { RecordVideo = true }));
-        B("", "Extraer texto", () => _ = App.Current.Capture.RunAsync(new CapturePreset { GrabText = true, OpenInEditor = false }));
-        B("", "Captura de pasos", () => App.Current.StartStepCapture());
-        B("", "Ventana de captura", () => App.Current.ShowCaptureWindow());
-        B("", "Abrir el editor", () => App.Current.ShowEditor());
+        B("\uE722", "Capturar imagen", () => _ = App.Current.Capture.RunAsync(App.Settings.Current.AsImagePreset()));
+        B("\uE714", "Grabar vídeo", () => _ = App.Current.Capture.RunAsync(new CapturePreset { RecordVideo = true }));
+        B("\uE8D2", "Extraer texto", () => _ = App.Current.Capture.RunAsync(new CapturePreset { GrabText = true, OpenInEditor = false }));
+        B("\uE8FD", "Captura de pasos", () => App.Current.StartStepCapture());
+        B("\uE7F4", "Ventana de captura", () => App.Current.ShowCaptureWindow());
+        B("\uE70F", "Abrir el editor", () => App.Current.ShowEditor());
         var grip = new Border { Width = 46, Height = 4, CornerRadius = new CornerRadius(2), Background = new SolidColorBrush(Color.FromArgb(0xC0, 255, 255, 255)), Margin = new Thickness(0, 4, 0, 3), HorizontalAlignment = HorizontalAlignment.Center };
         _tab = new Border
         {
@@ -61,6 +61,9 @@ public sealed class EdgeWidget : Window
     }
 
     void Collapse() { _buttons.Visibility = Visibility.Collapsed; }
+
+    /// <summary>Shows the buttons as hovering does (used by the self-test).</summary>
+    internal void Expand() { _buttons.Visibility = Visibility.Visible; Reposition(); }
 
     void Reposition()
     {
@@ -89,10 +92,10 @@ public sealed class WelcomeWindow : DialogWindow
         Body.Children.Add(new TextBlock { Text = "Capture, anote y comparta en segundos", FontSize = 20, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 10, 0, 10) });
         var tips = new (string glyph, string title, string text)[]
         {
-            ("", $"Pulse {App.Current.CaptureHotkeyText}", "Arrastre para una región, haga clic en una ventana o pulse Intro para la pantalla completa. La barra flotante permite copiar, extraer texto, grabar vídeo o capturar con desplazamiento."),
-            ("", "Anote en el editor", "Flechas, globos, pasos numerados, difuminado, lupa… Todo sigue siendo editable y se guarda automáticamente en la biblioteca."),
-            ("", "Grabe vídeo y GIF", $"{App.Settings.VideoHotkey} graba la pantalla con audio y cámara. Después puede recortar, cortar tramos o crear un GIF."),
-            ("", "Comparta", "Copiar todo, carpeta con nombres automáticos, correo, Office, Slack, FTP o un servidor propio desde el botón Compartir."),
+            ("\uE722", $"Pulse {App.Current.CaptureHotkeyText}", "Arrastre para una región, haga clic en una ventana o pulse Intro para la pantalla completa. La barra flotante permite copiar, extraer texto, grabar vídeo o capturar con desplazamiento."),
+            ("\uE70F", "Anote en el editor", "Flechas, globos, pasos numerados, difuminado, lupa… Todo sigue siendo editable y se guarda automáticamente en la biblioteca."),
+            ("\uE714", "Grabe vídeo y GIF", $"{App.Settings.VideoHotkey} graba la pantalla con audio y cámara. Después puede recortar, cortar tramos o crear un GIF."),
+            ("\uE72D", "Comparta", "Copiar todo, carpeta con nombres automáticos, correo, Office, Slack, FTP o un servidor propio desde el botón Compartir."),
         };
         foreach (var (g, t, x) in tips)
         {

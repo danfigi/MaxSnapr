@@ -2,7 +2,7 @@
 
 MaxSnapr cubre el conjunto de funciones habitual de un capturador profesional. Es una implementación propia: no reutiliza código ni recursos de terceros, y el nombre, los iconos (Segoe Fluent, del sistema), la paleta y los diseños son propios. Los componentes de código abierto que usa están en [TERCEROS.md](TERCEROS.md).
 
-La autoprueba (`MaxSnapr.exe --selftest`) verifica 60 comprobaciones y genera capturas de todas las ventanas. Entre ellas: que el vídeo lleve sonido audible (con un tono sintético), los fondos de la cámara, el modelo de segmentación, que la grabación siga a la cámara cuando se mueve y que el servidor del móvil rechace todo lo que no lleve su token.
+La autoprueba (`MaxSnapr.exe --selftest`) verifica 61 comprobaciones y genera capturas de todas las ventanas. Entre ellas: que todos los iconos tengan un símbolo existente en la fuente, que el vídeo lleve sonido audible (con un tono sintético), los fondos de la cámara, el modelo de segmentación, que la grabación siga a la cámara cuando se mueve y que el servidor del móvil rechace todo lo que no lleve su token.
 
 ## Fase 1: MVP ✔
 Proceso residente en el área de notificación, atajos globales, captura (región, ventana, pantalla), editor con herramientas básicas, bandeja, biblioteca, exportación PNG/JPG/BMP/GIF/TIFF/PDF, preferencias, temas claro y oscuro.
