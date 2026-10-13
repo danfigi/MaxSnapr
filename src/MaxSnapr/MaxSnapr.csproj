@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/MaxSnapr.ico</ApplicationIcon>
+    <AssemblyName>MaxSnapr</AssemblyName>
+    <RootNamespace>MaxSnapr</RootNamespace>
+    <Version>1.0.0</Version>
+    <Product>MaxSnapr</Product>
+    <AssemblyTitle>MaxSnapr</AssemblyTitle>
+    <Description>Captura, anotación y grabación de pantalla</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Reproducible binaries without the build machine's folders inside them. -->
+    <Deterministic>true</Deterministic>
+    <PathMap>$(MSBuildProjectDirectory)=MaxSnapr</PathMap>
+    <!-- Warn at restore time about packages with known vulnerabilities, including transitive ones. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- WPF reads DPI awareness from app.manifest; the WinForms analyzer warning does not apply. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+    <PackageReference Include="QRCoder" Version="1.8.1" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.31.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Person segmentation for camera backgrounds (PP-HumanSeg, Apache-2.0; see docs/TERCEROS.md). -->
+    <EmbeddedResource Include="Assets/Models/pphumanseg_2023mar.onnx" LogicalName="pphumanseg.onnx" />
+  </ItemGroup>
+</Project>

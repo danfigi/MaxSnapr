@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Bg.Window" Color="#1E2024"/>
+    <SolidColorBrush x:Key="Bg.Toolbar" Color="#26292E"/>
+    <SolidColorBrush x:Key="Bg.Panel" Color="#24272B"/>
+    <SolidColorBrush x:Key="Bg.Raised" Color="#2F3338"/>
+    <SolidColorBrush x:Key="Bg.Input" Color="#1A1C1F"/>
+    <SolidColorBrush x:Key="Bg.Hover" Color="#363A40"/>
+    <SolidColorBrush x:Key="Bg.Pressed" Color="#40454C"/>
+    <SolidColorBrush x:Key="Bg.Selected" Color="#1F3E5C"/>
+    <SolidColorBrush x:Key="Bg.Canvas" Color="#17191C"/>
+    <SolidColorBrush x:Key="Fg.Primary" Color="#ECEEF1"/>
+    <SolidColorBrush x:Key="Fg.Secondary" Color="#A3A9B2"/>
+    <SolidColorBrush x:Key="Fg.Disabled" Color="#5F646B"/>
+    <SolidColorBrush x:Key="Line" Color="#373B41"/>
+    <SolidColorBrush x:Key="Accent" Color="#2E9BFF"/>
+    <SolidColorBrush x:Key="Accent.Hover" Color="#52ADFF"/>
+    <SolidColorBrush x:Key="Accent.Fg" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Capture" Color="#E5484D"/>
+    <SolidColorBrush x:Key="Capture.Hover" Color="#F06368"/>
+</ResourceDictionary>

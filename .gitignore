@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+dist/
+*.pdb
+
+# IDE and user files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Never commit captures, recordings or test runs
+*.snapr
+*.mp4
+*.log
+maxsnapr-tests/
