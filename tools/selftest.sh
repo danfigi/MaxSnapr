@@ -5,6 +5,8 @@ set -u
 export DOTNET_NOLOGO=1 DOTNET_CLI_TELEMETRY_OPTOUT=1
 [ -n "${DOTNET_ROOT:-}" ] && export PATH="$DOTNET_ROOT:$PATH"
 NAME=${1:-run}
+# Resolve a relative exe argument before changing directory.
+if [ -n "${2:-}" ]; then GIVEN=$(cd "$(dirname "$2")" && pwd)/$(basename "$2"); fi
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT/src/MaxSnapr" || exit 99
 if [ -z "${2:-}" ]; then
@@ -14,7 +16,7 @@ if [ -z "${2:-}" ]; then
   if ! echo "$OUT" | grep -qE "Build succeeded|Compilación correcta"; then echo "BUILD FAILED"; exit 98; fi
   EXE=./bin/Debug/net8.0-windows10.0.19041.0/win-x64/MaxSnapr.exe
 else
-  EXE=$2
+  EXE=$GIVEN
 fi
 T="${TEMP:-/tmp}/maxsnapr-tests/$NAME"
 WT=$(cygpath -w "$T")

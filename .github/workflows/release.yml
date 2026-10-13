@@ -1,0 +1,93 @@
+name: Publicar versión
+
+# Al subir una etiqueta vX.Y.Z se compilan el ejecutable portátil y el instalador y se crea la Release.
+# Lanzado a mano, solo compila y deja los archivos como artefactos para probarlos.
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Versión de prueba (X.Y.Z)
+        default: 1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Versión
+        id: v
+        shell: pwsh
+        run: |
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '${{ inputs.version }}' }
+          if ($v -notmatch '^\d+\.\d+\.\d+$') { throw "Versión no válida: $v" }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Paquetes con vulnerabilidades conocidas
+        shell: pwsh
+        run: |
+          dotnet restore src/MaxSnapr/MaxSnapr.csproj -r win-x64
+          $out = dotnet list src/MaxSnapr/MaxSnapr.csproj package --vulnerable --include-transitive
+          $out
+          if ($out -match '>\s') { throw 'Hay paquetes con vulnerabilidades conocidas' }
+
+      - name: Ejecutable autónomo (incluye .NET)
+        run: >
+          dotnet publish src/MaxSnapr/MaxSnapr.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:DebugType=none
+          -p:Version=${{ steps.v.outputs.version }} -o artifacts/publish
+
+      - name: Instalador
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          & $iscc /Qp "/DAppVersion=${{ steps.v.outputs.version }}" "/DSourceExe=..\artifacts\publish\MaxSnapr.exe" installer\MaxSnapr.iss
+          if ($LASTEXITCODE -ne 0) { throw 'El instalador no se pudo generar' }
+
+      - name: Preparar archivos
+        id: files
+        shell: pwsh
+        run: |
+          $v = '${{ steps.v.outputs.version }}'
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item artifacts/publish/MaxSnapr.exe "out/MaxSnapr-$v-portable.exe"
+          Copy-Item "artifacts/MaxSnapr-Setup-$v.exe" "out/MaxSnapr-Setup-$v.exe"
+          Get-ChildItem out -File | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content out/SHA256SUMS.txt -Encoding ascii
+          Get-Content out/SHA256SUMS.txt
+
+      - name: Artefactos de prueba
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v7
+        with:
+          name: MaxSnapr-${{ steps.v.outputs.version }}
+          path: out/
+
+      - name: Crear la Release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = '${{ steps.v.outputs.version }}'
+          $notes = @"
+          ## Descargar
+
+          | Archivo | Para qué |
+          |---|---|
+          | **MaxSnapr-Setup-$v.exe** | Instalador recomendado: menú Inicio, desinstalación desde Configuración. No pide permisos de administrador. |
+          | **MaxSnapr-$v-portable.exe** | Sin instalar: descárguelo y ábralo. |
+
+          Los dos llevan .NET dentro: no hace falta instalar nada más. Requieren Windows 10 (versión 2004) o Windows 11 de 64 bits.
+
+          > La primera vez, Windows SmartScreen puede avisar de que la aplicación no es conocida porque no está firmada digitalmente. Pulse **Más información → Ejecutar de todas formas**. Puede comprobar el archivo con las sumas de **SHA256SUMS.txt**.
+          "@
+          gh release create $env:GITHUB_REF_NAME out/* --title "MaxSnapr $v" --notes $notes

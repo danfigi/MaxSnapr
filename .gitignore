@@ -2,6 +2,8 @@
 bin/
 obj/
 dist/
+artifacts/
+out/
 *.pdb
 
 # IDE and user files
