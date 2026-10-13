@@ -69,6 +69,7 @@ public partial class EditorWindow : Window
     {
         InitializeComponent();
         Icon = Logo;
+        SupportMenu.Visibility = SupportSeparator.Visibility = Support.Available ? Visibility.Visible : Visibility.Collapsed;
         foreach (var def in ToolDefs) _tools[def.Kind] = CreateTool(def.Kind);
         BuildToolStrip();
 
@@ -1337,8 +1338,11 @@ public partial class EditorWindow : Window
     void Shortcuts_Click(object sender, RoutedEventArgs e) => new ShortcutsWindow { Owner = this }.ShowDialog();
     void OpenLog_Click(object sender, RoutedEventArgs e) => Process.Start("explorer.exe", AppSettings.Folder);
 
+    void Support_Click(object sender, RoutedEventArgs e) => Support.Show(this);
+
     void About_Click(object sender, RoutedEventArgs e) => MessageBox.Show(this,
-        $"MaxSnapr {typeof(App).Assembly.GetName().Version?.ToString(2)}\nCaptura, anotación y grabación de pantalla para Windows.\nEn honor a Max.\n\nAplicación original: no contiene código, iconos ni recursos de terceros.",
+        $"MaxSnapr {typeof(App).Assembly.GetName().Version?.ToString(2)}\nCaptura, anotación y grabación de pantalla para Windows.\nEn honor a Max.\n\nAplicación original: no contiene código, iconos ni recursos de terceros."
+        + (Support.Available ? "\n\nSi te resulta útil, puedes apoyarla en Ayuda > Apoyar MaxSnapr." : ""),
         "Acerca de MaxSnapr", MessageBoxButton.OK, MessageBoxImage.Information);
 
     // ================================================================ crop bar

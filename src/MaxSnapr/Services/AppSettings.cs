@@ -90,6 +90,7 @@ public sealed class AppSettings
     public bool ShowEdgeWidget { get; set; }
     public bool WatchClipboard { get; set; }
     public bool ShowWelcome { get; set; } = true;
+    public bool SupportReminderShown { get; set; }
     public bool SpellCheck { get; set; } = true;
     public bool PixelGrid { get; set; } = true;
     public Hotkey StepCaptureHotkey { get; set; } = new() { Ctrl = true, Shift = true, Key = (int)System.Windows.Input.Key.P };

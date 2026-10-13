@@ -148,6 +148,8 @@
                         <MenuItem Header="_Atajos de teclado" InputGestureText="F1" Click="Shortcuts_Click"/>
                         <MenuItem Header="_Bienvenida y consejos" Click="Welcome_Click"/>
                         <MenuItem Header="Abrir la carpeta de _registro" Click="OpenLog_Click"/>
+                        <Separator x:Name="SupportSeparator"/>
+                        <MenuItem x:Name="SupportMenu" Header="A_poyar MaxSnapr…" Click="Support_Click"/>
                         <MenuItem Header="Acerca _de MaxSnapr" Click="About_Click"/>
                     </MenuItem>
                 </Menu>

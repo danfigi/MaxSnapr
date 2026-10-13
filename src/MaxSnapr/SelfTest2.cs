@@ -502,18 +502,34 @@ public static partial class SelfTest
         {
             ("Widget del borde", widget), ("Bienvenida", new WelcomeWindow()), ("Editor", new EditorWindow { Width = 1200, Height = 800 }),
             ("Ventana de captura", new CaptureWindow()), ("Preferencias", new SettingsWindow()), ("Barra de grabación", setup),
+            ("Apoyar", new SupportWindow(reminder: true)),
         };
         foreach (var (name, w) in windows)
         {
             if (!w.IsVisible) { w.Left = 0; w.Top = 0; w.WindowStartupLocation = WindowStartupLocation.Manual; w.Show(); }
             await Pump(300);
             Scan(w, name);
+            if (w is SupportWindow) Shot(w, outDir, "39-support.png");
             w.Close();
         }
         session.CloseTestPreview();
         bool counted = perWindow.GetValueOrDefault("Widget del borde") >= 6 && perWindow.GetValueOrDefault("Bienvenida") >= 4;
         Check("Todos los iconos se ven (widget, bienvenida, editor, captura, preferencias, grabación)", problems.Count == 0 && counted,
             problems.Count == 0 ? $"{icons} iconos revisados: " + string.Join(", ", perWindow.Select(p => $"{p.Key} {p.Value}")) : string.Join("; ", problems.Take(6)));
+    }
+
+    /// <summary>The donation reminder fires once when the library reaches the threshold, then never again.</summary>
+    static void SupportReminderCheck()
+    {
+        var store = LibraryStore.Instance;
+        App.Settings.SupportReminderShown = false;
+        int fired = 0;
+        Support.Watch(store, store.Items.Count + 1, () => fired++);
+        store.Add(new EditorDocument(SampleScreen(120, 80)), "Recordatorio 1", "Prueba");
+        store.Add(new EditorDocument(SampleScreen(120, 80)), "Recordatorio 2", "Prueba");
+        Support.Watch(store, 1, () => fired++); // already shown: must stay silent
+        store.Add(new EditorDocument(SampleScreen(120, 80)), "Recordatorio 3", "Prueba");
+        Check("Recordatorio de apoyo: una sola vez", fired == 1 && App.Settings.SupportReminderShown, $"{fired} aviso(s)");
     }
 
     static async Task ExtraWindowShots(string outDir)
@@ -554,5 +570,6 @@ public static partial class SelfTest
         await WebcamPositionCheck(outDir);
         await MobileServerCheck();
         await IconCheck(outDir);
+        SupportReminderCheck();
     }
 }

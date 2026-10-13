@@ -93,6 +93,7 @@ public partial class App : Application
         ThemeService.Apply(Settings.Theme);
         LibraryStore.Initialize(Settings.LibraryFolder);
         Capture = new CaptureService();
+        Support.WatchLibrary(LibraryStore.Instance);
 
         CreateTray();
         RegisterHotkeys();
@@ -161,6 +162,7 @@ public partial class App : Application
         menu.Items.Add("Abrir el editor", null, (_, _) => ShowEditor());
         menu.Items.Add("Biblioteca", null, (_, _) => ShowEditor().ShowLibrary());
         menu.Items.Add("Preferencias…", null, (_, _) => ShowSettings());
+        if (Support.Available) menu.Items.Add("Apoyar MaxSnapr…", null, (_, _) => Support.Show(Editor));
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Salir", null, (_, _) => Quit());
         _tray.ContextMenuStrip = menu;
