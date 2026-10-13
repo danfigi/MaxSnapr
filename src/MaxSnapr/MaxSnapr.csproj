@@ -20,6 +20,8 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <!-- Reproducible binaries without the build machine's folders inside them. -->
     <Deterministic>true</Deterministic>
+    <!-- Show "1.0.0" in the file properties, without the commit hash. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <PathMap>$(MSBuildProjectDirectory)=MaxSnapr</PathMap>
     <!-- Warn at restore time about packages with known vulnerabilities, including transitive ones. -->
     <NuGetAudit>true</NuGetAudit>
