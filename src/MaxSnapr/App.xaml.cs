@@ -39,10 +39,15 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        // Build helper: writes the multi-size application icon used by the .exe.
+        // Build helper: writes the multi-size application icon used by the .exe, or a large PNG of the logo.
         if (e.Args.Length >= 2 && e.Args[0] == "--write-icon")
         {
-            AppIcon.WriteIco(e.Args[1]);
+            if (e.Args[1].EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                using var logo = AppIcon.Render(e.Args.Length >= 3 && int.TryParse(e.Args[2], out var px) ? Math.Clamp(px, 16, 2048) : 512);
+                logo.Save(e.Args[1], System.Drawing.Imaging.ImageFormat.Png);
+            }
+            else AppIcon.WriteIco(e.Args[1]);
             Shutdown(0);
             return;
         }
