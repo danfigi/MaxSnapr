@@ -38,4 +38,25 @@
     <!-- Person segmentation for camera backgrounds (PP-HumanSeg, Apache-2.0; see docs/TERCEROS.md). -->
     <EmbeddedResource Include="Assets/Models/pphumanseg_2023mar.onnx" LogicalName="pphumanseg.onnx" />
   </ItemGroup>
+  <!--
+    Release obfuscation (dotnet publish ... -p:Obfuscate=true): runs Obfuscar on the compiled assembly
+    before it is bundled. Skipped for WPF's temporary markup-compile project and when nothing was recompiled.
+  -->
+  <PropertyGroup Condition="'$(Obfuscate)' == 'true'">
+    <DebugType>none</DebugType>
+    <!-- Under obj\: it holds the name map, which must never be published. -->
+    <_ObfDir>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)obfuscar-$(Configuration)\</_ObfDir>
+  </PropertyGroup>
+  <Target Name="ObfuscateAssembly" AfterTargets="CoreCompile"
+          Condition="'$(Obfuscate)' == 'true' and !$(MSBuildProjectName.EndsWith('_wpftmp'))"
+          Inputs="@(IntermediateAssembly)" Outputs="$(_ObfDir)done.stamp">
+    <RemoveDir Directories="$(_ObfDir)" />
+    <!-- Obfuscar resolves references from its input folder. -->
+    <Copy SourceFiles="@(ReferencePath)" DestinationFolder="$(_ObfDir)in" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(IntermediateAssembly)" DestinationFolder="$(_ObfDir)in" />
+    <Copy SourceFiles="obfuscar.xml" DestinationFolder="$(_ObfDir)" />
+    <Exec Command="dotnet tool run obfuscar.console obfuscar.xml" WorkingDirectory="$(_ObfDir)" />
+    <Copy SourceFiles="$(_ObfDir)out\$(TargetFileName)" DestinationFiles="@(IntermediateAssembly)" />
+    <Touch Files="$(_ObfDir)done.stamp" AlwaysCreate="true" />
+  </Target>
 </Project>

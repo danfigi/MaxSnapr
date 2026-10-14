@@ -560,7 +560,7 @@ public static partial class SelfTest
                 var e = w.ExpectedBounds();
                 bool topmost = (Native.NativeMethods.GetWindowLong(h, Native.NativeMethods.GWL_EXSTYLE) & 0x8) != 0;
                 Native.NativeMethods.DwmGetWindowAttribute(h, 14, out int c, sizeof(int));
-                return $"[en {r.Left},{r.Top} {r.Width}×{r.Height}, esperado {e.X},{e.Y} {e.Width}×{e.Height}, visible {w.IsVisible}, min {Native.NativeMethods.IsIconic(h)}, encima {topmost}, cloak {c}, estado {w.WindowState}]";
+                return $"[en {r.Left},{r.Top} {r.Width}×{r.Height}, esperado {e.X},{e.Y} {e.Width}×{e.Height}, visible {w.IsVisible}, min {Native.NativeMethods.IsIconic(h)}, encima {topmost}, cloak {c}, estado {w.WindowState}, omitido: {w.LastSkip ?? "no"}]";
             }
 
             bool InPlace()
@@ -583,6 +583,8 @@ public static partial class SelfTest
                 await Pump(250);
                 var fixedWhy = w.EnsureVisible();
                 await Pump(250);
+                // A full-screen app appearing mid-test makes the widget step aside on purpose: not a failure.
+                if (fixedWhy == null && w.LastSkip == "pantalla completa") { results.Add($"{name}: omitida (pantalla completa)"); return; }
                 // Some damage Windows refuses for this kind of window (it stays in place): that counts as a pass too.
                 bool ok = InPlace();
                 allOk &= ok;

@@ -28,6 +28,8 @@ public sealed class EdgeWidget : Window
     /// <summary>How many times the watchdog had to bring the widget back, and why the last time (diagnostics and self-test).</summary>
     public int Repairs { get; private set; }
     public string? LastRepair { get; private set; }
+    /// <summary>Why the last check did nothing on purpose (diagnostics and self-test).</summary>
+    public string? LastSkip { get; private set; }
 
     public EdgeWidget()
     {
@@ -135,9 +137,11 @@ public sealed class EdgeWidget : Window
     /// <summary>Puts the widget back if anything has hidden, moved, covered or minimised it. Returns what was fixed, or null.</summary>
     internal string? EnsureVisible()
     {
-        if (_hwnd == IntPtr.Zero || !App.Settings.ShowEdgeWidget) return null;
-        // Captures and recordings hide our windows on purpose; full-screen apps and presentations own the screen.
-        if (CaptureService.HidingWindows || Video.RecordingSession.IsRecording || ForegroundIsFullScreen()) return null;
+        LastSkip = _hwnd == IntPtr.Zero ? "sin ventana" : !App.Settings.ShowEdgeWidget ? "desactivado"
+            // Captures and recordings hide our windows on purpose; full-screen apps and presentations own the screen.
+            : CaptureService.HidingWindows ? "captura en curso" : Video.RecordingSession.IsRecording ? "grabando"
+            : ForegroundIsFullScreen() ? "pantalla completa" : null;
+        if (LastSkip != null) return null;
 
         string? reason = null;
         if (!IsVisible) { Show(); reason = "oculto"; }

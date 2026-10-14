@@ -26,6 +26,25 @@ El instalador se genera con [Inno Setup 6](https://jrsoftware.org/isinfo.php) a 
 iscc /DAppVersion=1.0.0 installer/MaxSnapr.iss
 ```
 
+## Ofuscación
+
+Las versiones publicadas se compilan con `-p:Obfuscate=true`, que pasa [Obfuscar](https://github.com/obfuscar/obfuscar) (MIT, fijado en `.config/dotnet-tools.json`; `dotnet tool restore` lo instala) sobre el ensamblado antes de empaquetarlo. La configuración está en `src/MaxSnapr/obfuscar.xml`. Renombra los tipos, métodos y campos privados e internos, y deja intacto lo que se busca por nombre:
+- la API pública, que usan XAML y los enlaces de datos;
+- las propiedades, porque los ajustes, la biblioteca y los `.snapr` son JSON con sus nombres;
+- los nombres referenciados desde el XAML compilado.
+
+Las llamadas a Windows se renombran, pero conservan su punto de entrada.
+
+Antes de publicar, compruebe el ejecutable ofuscado con la autoprueba y que guarda los datos igual que la versión normal:
+
+```bash
+dotnet publish src/MaxSnapr/MaxSnapr.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:Obfuscate=true -o artifacts/obf
+tools/selftest.sh normal && tools/selftest.sh obf artifacts/obf/MaxSnapr.exe
+python tools/compare_saved_data.py "%TEMP%\maxsnapr-tests\normal\home" "%TEMP%\maxsnapr-tests\obf\home"
+```
+
+El mapa de nombres (`obj/obfuscar-Release/out/Mapping.txt`) permite interpretar un error del ejecutable ofuscado. Está excluido de Git y en GitHub solo se guarda como artefacto privado de cada versión: no lo publique nunca.
+
 ## Publicar una versión
 
 Suba una etiqueta `vX.Y.Z`:

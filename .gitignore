@@ -17,3 +17,7 @@ out/
 *.mp4
 *.log
 maxsnapr-tests/
+
+# Obfuscation work folder (holds the private name map)
+obfuscar/
+Mapping.txt
