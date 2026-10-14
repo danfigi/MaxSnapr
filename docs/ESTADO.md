@@ -2,7 +2,7 @@
 
 MaxSnapr cubre el conjunto de funciones habitual de un capturador profesional. Es una implementación propia: no reutiliza código ni recursos de terceros, y el nombre, los iconos (Segoe Fluent, del sistema), la paleta y los diseños son propios. Los componentes de código abierto que usa están en [TERCEROS.md](TERCEROS.md).
 
-La autoprueba (`MaxSnapr.exe --selftest`) verifica 61 comprobaciones y genera capturas de todas las ventanas. Entre ellas: que todos los iconos tengan un símbolo existente en la fuente, que el vídeo lleve sonido audible (con un tono sintético), los fondos de la cámara, el modelo de segmentación, que la grabación siga a la cámara cuando se mueve y que el servidor del móvil rechace todo lo que no lleve su token.
+La autoprueba (`MaxSnapr.exe --selftest`) verifica 63 comprobaciones y genera capturas de todas las ventanas. Entre ellas: que todos los iconos tengan un símbolo existente en la fuente, que el vídeo lleve sonido audible (con un tono sintético), los fondos de la cámara, el modelo de segmentación, que la grabación siga a la cámara cuando se mueve y que el servidor del móvil rechace todo lo que no lleve su token.
 
 ## Fase 1: MVP ✔
 Proceso residente en el área de notificación, atajos globales, captura (región, ventana, pantalla), editor con herramientas básicas, bandeja, biblioteca, exportación PNG/JPG/BMP/GIF/TIFF/PDF, preferencias, temas claro y oscuro.
@@ -63,7 +63,7 @@ Proceso residente en el área de notificación, atajos globales, captura (regió
   - Historial de envíos. Las credenciales se cifran con DPAPI.
 
 ## Fase 5: ecosistema ✔ (parcial, ver abajo)
-Widget en el borde, recepción desde el móvil (página web local con código QR y token), asociación de `.snapr`, «Editar con MaxSnapr» en el Explorador, bienvenida, diagnóstico y restablecer preferencias.
+Widget en el borde (siempre visible: un vigilante lo devuelve a su sitio si Windows lo oculta, lo mueve, lo tapa o cambia de pantallas o de escritorio virtual; no roba el foco ni aparece en Alt+Tab), recepción desde el móvil (página web local con código QR y token), asociación de `.snapr`, «Editar con MaxSnapr» en el Explorador, bienvenida, diagnóstico y restablecer preferencias.
 
 ## Fuera de alcance, con su motivo
 - **Servicios en la nube propios de otros fabricantes** (enlaces compartidos, cuentas, bibliotecas compartidas, tiendas de recursos): requieren su infraestructura.

@@ -193,11 +193,36 @@ public partial class App : Application
         else if (!Settings.WatchClipboard && _clipWatcher != null) { _clipWatcher.Dispose(); _clipWatcher = null; }
     }
 
+    bool _quitting;
+
     public void UpdateEdgeWidget()
     {
-        if (Settings.ShowEdgeWidget && _edge == null) { _edge = new EdgeWidget(); _edge.Show(); }
-        else if (!Settings.ShowEdgeWidget && _edge != null) { _edge.Close(); _edge = null; }
+        if (Settings.ShowEdgeWidget && _edge == null)
+        {
+            var edge = _edge = new EdgeWidget();
+            // If anything closes it while it is still wanted, build a new one.
+            edge.Closed += (_, _) =>
+            {
+                if (_edge != edge) return;
+                _edge = null;
+                if (!_quitting && Settings.ShowEdgeWidget)
+                {
+                    Log.Info("Widget del borde cerrado inesperadamente; se vuelve a abrir");
+                    Dispatcher.BeginInvoke(UpdateEdgeWidget, System.Windows.Threading.DispatcherPriority.Background);
+                }
+            };
+            edge.Show();
+        }
+        else if (!Settings.ShowEdgeWidget && _edge != null)
+        {
+            var edge = _edge;
+            _edge = null;
+            edge.Close();
+        }
     }
+
+    /// <summary>The live edge widget, if any (diagnostics and self-test).</summary>
+    public EdgeWidget? EdgeWidgetWindow => _edge;
 
     public void ShowCaptureWindow()
     {
@@ -231,6 +256,7 @@ public partial class App : Application
 
     public void Quit()
     {
+        _quitting = true;
         Editor?.SaveCurrent();
         Settings.Save();
         LibraryStore.Instance.Save();

@@ -532,6 +532,94 @@ public static partial class SelfTest
         Check("Recordatorio de apoyo: una sola vez", fired == 1 && App.Settings.SupportReminderShown, $"{fired} aviso(s)");
     }
 
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr h, int attr, ref int value, int size);
+
+    /// <summary>
+    /// Breaks the edge widget in every way Windows can (hidden, minimised, off screen, not on top, cloaked,
+    /// asked to minimise or close, closed outright) and checks that it always comes back to its place.
+    /// </summary>
+    static async Task EdgeWidgetResilienceCheck()
+    {
+        if (EdgeWidget.ForegroundIsFullScreen()) { Check("Widget del borde: siempre vuelve", true, "omitida: hay una aplicación a pantalla completa"); return; }
+        bool previous = App.Settings.ShowEdgeWidget;
+        App.Settings.ShowEdgeWidget = true;
+        var results = new List<string>();
+        bool allOk = true;
+        try
+        {
+            App.Current.UpdateEdgeWidget();
+            var w = App.Current.EdgeWidgetWindow!;
+            await Pump(500);
+            var h = new System.Windows.Interop.WindowInteropHelper(w).Handle;
+
+            string State()
+            {
+                Native.NativeMethods.GetWindowRect(h, out var r);
+                var e = w.ExpectedBounds();
+                bool topmost = (Native.NativeMethods.GetWindowLong(h, Native.NativeMethods.GWL_EXSTYLE) & 0x8) != 0;
+                Native.NativeMethods.DwmGetWindowAttribute(h, 14, out int c, sizeof(int));
+                return $"[en {r.Left},{r.Top} {r.Width}×{r.Height}, esperado {e.X},{e.Y} {e.Width}×{e.Height}, visible {w.IsVisible}, min {Native.NativeMethods.IsIconic(h)}, encima {topmost}, cloak {c}, estado {w.WindowState}]";
+            }
+
+            bool InPlace()
+            {
+                if (!w.IsVisible || Native.NativeMethods.IsIconic(h) || !Native.NativeMethods.GetWindowRect(h, out var r)) return false;
+                var e = w.ExpectedBounds();
+                bool topmost = (Native.NativeMethods.GetWindowLong(h, Native.NativeMethods.GWL_EXSTYLE) & 0x8) != 0;
+                bool cloaked = Native.NativeMethods.DwmGetWindowAttribute(h, 14, out int c, sizeof(int)) == 0 && c != 0;
+                return topmost && !cloaked && Math.Abs(r.Left - e.X) <= 2 && Math.Abs(r.Top - e.Y) <= 2;
+            }
+
+            // A healthy widget must be left alone (no flicker, no log noise).
+            var healthy = w.EnsureVisible();
+            results.Add(healthy == null ? "sano: sin cambios" : $"sano: reparado sin motivo ({healthy}) " + State());
+            allOk &= healthy == null && InPlace();
+
+            async Task Break(string name, Action damage)
+            {
+                damage();
+                await Pump(250);
+                var fixedWhy = w.EnsureVisible();
+                await Pump(250);
+                // Some damage Windows refuses for this kind of window (it stays in place): that counts as a pass too.
+                bool ok = InPlace();
+                allOk &= ok;
+                results.Add($"{name}: {(!ok ? "NO vuelve " + State() : fixedWhy != null ? $"vuelve ({fixedWhy})" : "Windows no lo permite")}");
+            }
+
+            await Break("ocultado", () => w.Hide());
+            await Break("minimizado", () => ShowWindow(h, 6 /*SW_MINIMIZE*/));
+            await Break("fuera de pantalla", () => Native.NativeMethods.SetWindowPos(h, IntPtr.Zero, -6000, -6000, 0, 0, 0x1 | 0x4 | 0x10 /*NOSIZE|NOZORDER|NOACTIVATE*/));
+            await Break("sin siempre visible", () => Native.NativeMethods.SetWindowPos(h, new IntPtr(-2) /*HWND_NOTOPMOST*/, 0, 0, 0, 0, 0x1 | 0x2 | 0x10));
+            await Break("invisible (cloak)", () => { int on = 1; DwmSetWindowAttribute(h, 13, ref on, sizeof(int)); });
+
+            // Minimise and close requests (Win+M, Alt+F4) are refused outright.
+            SendMessage(h, 0x0112, new IntPtr(0xF020), IntPtr.Zero);
+            SendMessage(h, 0x0112, new IntPtr(0xF060), IntPtr.Zero);
+            await Pump(300);
+            bool refused = App.Current.EdgeWidgetWindow == w && InPlace();
+            allOk &= refused;
+            results.Add(refused ? "minimizar y Alt+F4: rechazados" : "minimizar o Alt+F4: lo quitaron");
+
+            // Closed by force (another program, Task Manager): the app builds a new one.
+            w.Close();
+            await Pump(800);
+            var again = App.Current.EdgeWidgetWindow;
+            bool rebuilt = again != null && again != w && again.IsVisible;
+            allOk &= rebuilt;
+            results.Add(rebuilt ? "cerrado a la fuerza: se vuelve a abrir" : "cerrado a la fuerza: NO vuelve");
+        }
+        catch (Exception ex) { allOk = false; results.Add("excepción: " + ex.Message); }
+        finally
+        {
+            App.Settings.ShowEdgeWidget = previous;
+            App.Current.UpdateEdgeWidget();
+        }
+        Check("Widget del borde: siempre vuelve", allOk, string.Join("; ", results));
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -570,6 +658,7 @@ public static partial class SelfTest
         await WebcamPositionCheck(outDir);
         await MobileServerCheck();
         await IconCheck(outDir);
+        await EdgeWidgetResilienceCheck();
         SupportReminderCheck();
     }
 }

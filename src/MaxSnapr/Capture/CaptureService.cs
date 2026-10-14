@@ -40,6 +40,11 @@ public sealed class CaptureService
         _interval = null;
     }
 
+    static int _hiding;
+
+    /// <summary>True while a capture has our windows hidden on purpose (the edge widget must not reappear meanwhile).</summary>
+    public static bool HidingWindows => _hiding > 0;
+
     public async Task RunAsync(CapturePreset preset, Int32Rect? fixedRect = null, bool isRepeat = false)
     {
         if (_busy || Video.RecordingSession.IsRecording) return;
@@ -47,6 +52,7 @@ public sealed class CaptureService
         _busy = true;
         var hidden = Application.Current.Windows.OfType<Window>().Where(w => w.IsVisible && w is not CountdownWindow).ToList();
         Int32Rect? captured = null;
+        _hiding++;
         try
         {
             foreach (var w in hidden) w.Hide();
@@ -173,6 +179,7 @@ public sealed class CaptureService
         finally
         {
             foreach (var w in hidden.Where(w => w.IsLoaded && w is not CountdownWindow)) w.Show();
+            _hiding--;
             _busy = false;
         }
         if (!isRepeat && preset.IntervalSeconds > 0 && captured != null && !preset.GrabText && !preset.RecordVideo) StartInterval(preset, captured.Value);
@@ -325,16 +332,21 @@ public sealed class CaptureService
     public static async Task<Color?> PickScreenColorAsync()
     {
         var hidden = Application.Current.Windows.OfType<Window>().Where(w => w.IsVisible).ToList();
+        _hiding++;
         foreach (var w in hidden) w.Hide();
-        await Task.Delay(200);
         try
         {
+            await Task.Delay(200);
             var snap = ScreenCapturer.Snapshot();
             var sel = await new CaptureOverlay(snap, true, "Cuentagotas", OverlayMode.PickColor).RunAsync();
             if (sel == null) return null;
             return CaptureOverlay.OverlaySurface.PixelAt(snap.Image, sel.Rect.X, sel.Rect.Y);
         }
-        finally { foreach (var w in hidden) w.Show(); }
+        finally
+        {
+            foreach (var w in hidden.Where(w => w.IsLoaded)) w.Show();
+            _hiding--;
+        }
     }
 }
 

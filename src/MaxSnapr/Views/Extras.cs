@@ -23,56 +23,6 @@ using Microsoft.Win32;
 
 namespace MaxSnapr.Views;
 
-/// <summary>Slim capture tab docked to the top edge of the primary screen; expands on hover.</summary>
-public sealed class EdgeWidget : Window
-{
-    readonly Border _tab;
-    readonly StackPanel _buttons = new() { Orientation = Orientation.Horizontal, Visibility = Visibility.Collapsed, Margin = new Thickness(6, 4, 6, 6) };
-
-    public EdgeWidget()
-    {
-        WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent; Topmost = true; ShowInTaskbar = false; ShowActivated = false;
-        SizeToContent = SizeToContent.WidthAndHeight;
-        void B(string glyph, string tip, Action a)
-        {
-            var b = new Button { Style = (Style)Application.Current.FindResource("FlatButton"), Width = 40, Height = 36, Padding = new Thickness(0), ToolTip = tip,
-                Content = new TextBlock { Text = glyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 17, Foreground = Brushes.White } };
-            b.Click += (_, _) => { Collapse(); a(); };
-            _buttons.Children.Add(b);
-        }
-        B("\uE722", "Capturar imagen", () => _ = App.Current.Capture.RunAsync(App.Settings.Current.AsImagePreset()));
-        B("\uE714", "Grabar vídeo", () => _ = App.Current.Capture.RunAsync(new CapturePreset { RecordVideo = true }));
-        B("\uE8D2", "Extraer texto", () => _ = App.Current.Capture.RunAsync(new CapturePreset { GrabText = true, OpenInEditor = false }));
-        B("\uE8FD", "Captura de pasos", () => App.Current.StartStepCapture());
-        B("\uE7F4", "Ventana de captura", () => App.Current.ShowCaptureWindow());
-        B("\uE70F", "Abrir el editor", () => App.Current.ShowEditor());
-        var grip = new Border { Width = 46, Height = 4, CornerRadius = new CornerRadius(2), Background = new SolidColorBrush(Color.FromArgb(0xC0, 255, 255, 255)), Margin = new Thickness(0, 4, 0, 3), HorizontalAlignment = HorizontalAlignment.Center };
-        _tab = new Border
-        {
-            Background = new SolidColorBrush(Color.FromArgb(0xF0, 0x24, 0x27, 0x2B)), CornerRadius = new CornerRadius(0, 0, 10, 10),
-            Child = new StackPanel { Children = { _buttons, grip } }, MinWidth = 90,
-        };
-        Content = _tab;
-        MouseEnter += (_, _) => { _buttons.Visibility = Visibility.Visible; Reposition(); };
-        MouseLeave += (_, _) => Collapse();
-        SourceInitialized += (_, _) => Video.CaptureExclusion.Apply(this);
-        Loaded += (_, _) => Reposition();
-        SizeChanged += (_, _) => Reposition();
-    }
-
-    void Collapse() { _buttons.Visibility = Visibility.Collapsed; }
-
-    /// <summary>Shows the buttons as hovering does (used by the self-test).</summary>
-    internal void Expand() { _buttons.Visibility = Visibility.Visible; Reposition(); }
-
-    void Reposition()
-    {
-        var wa = SystemParameters.WorkArea;
-        Left = wa.Left + (wa.Width - ActualWidth) / 2;
-        Top = wa.Top;
-    }
-}
-
 internal static class PresetExtensions
 {
     // Edge widget "image" button: current preset but forced to image mode.
