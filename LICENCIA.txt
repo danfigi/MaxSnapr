@@ -1,0 +1,35 @@
+﻿LICENCIA DE USO DE MAXSNAPR
+
+Copyright (c) 2026 danfigi. Todos los derechos reservados.
+
+MaxSnapr es software gratuito, pero no es software libre: su autor conserva todos los derechos sobre el programa, su código, su nombre y su logotipo. Al instalar o usar MaxSnapr aceptas estas condiciones.
+
+1. LO QUE PUEDES HACER
+   - Usar MaxSnapr gratis, en el ámbito personal y en el profesional, en todos los equipos que quieras.
+   - Usar libremente las capturas, imágenes y vídeos que hagas con él: son tuyos.
+   - Recomendarlo y compartir el enlace a su página oficial de descarga.
+
+2. LO QUE NO PUEDES HACER
+   - Vender, alquilar o sublicenciar MaxSnapr, ni cobrar por él de ninguna forma.
+   - Distribuir copias del programa fuera de su página oficial, ni publicarlo en otras webs o tiendas, sin permiso escrito del autor.
+   - Modificar el programa o distribuir versiones modificadas.
+   - Descompilar, desensamblar o aplicar ingeniería inversa al programa, salvo en la medida en que la ley aplicable lo permita expresamente pese a esta prohibición.
+   - Eliminar o alterar los avisos de autoría, el nombre o el logotipo.
+
+3. COMPONENTES DE TERCEROS
+   MaxSnapr incluye componentes de código abierto que se rigen por sus propias licencias (MIT y Apache 2.0). Se detallan en el archivo TERCEROS.md, que se instala junto al programa. Esta licencia no limita los derechos que esas licencias te conceden sobre dichos componentes.
+
+4. PRIVACIDAD
+   MaxSnapr no recopila datos, no tiene telemetría ni publicidad y no necesita cuenta. Solo envía información fuera de tu equipo cuando tú usas una función para compartir.
+
+5. SIN GARANTÍA
+   MaxSnapr se ofrece «tal cual», sin garantías de ningún tipo, ni expresas ni implícitas, incluidas las de comerciabilidad, idoneidad para un fin concreto o ausencia de errores. Haz copias de seguridad de lo que te importe.
+
+6. LIMITACIÓN DE RESPONSABILIDAD
+   En la máxima medida permitida por la ley, el autor no será responsable de ningún daño derivado del uso o de la imposibilidad de uso de MaxSnapr, incluida la pérdida de datos. Nada de lo anterior limita los derechos que la ley reconoce a los consumidores y que no pueden excluirse por contrato.
+
+7. CAMBIOS Y TERMINACIÓN
+   Las versiones futuras pueden publicarse con otras condiciones. Esta licencia termina automáticamente si incumples sus términos; en ese caso debes dejar de usar el programa y eliminarlo.
+
+8. LEY APLICABLE
+   Esta licencia se rige por la legislación española.

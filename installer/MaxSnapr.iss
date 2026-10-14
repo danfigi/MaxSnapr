@@ -34,6 +34,8 @@ SetupIconFile=..\src\MaxSnapr\Assets\MaxSnapr.ico
 UninstallDisplayIcon={app}\MaxSnapr.exe
 UninstallDisplayName=MaxSnapr
 WizardStyle=modern
+; Licence of use shown before installing (the user has to accept it).
+LicenseFile=..\LICENCIA.txt
 Compression=lzma2/max
 SolidCompression=yes
 ; Ask to close a running MaxSnapr before replacing it.
@@ -49,6 +51,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#SourceExe}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENCIA.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\TERCEROS.md"; DestDir: "{app}\licencias"; Flags: ignoreversion
 Source: "..\src\MaxSnapr\Assets\Models\LICENSE-pphumanseg.txt"; DestDir: "{app}\licencias"; Flags: ignoreversion
 

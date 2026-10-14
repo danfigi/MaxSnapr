@@ -1,81 +1,102 @@
-# MaxSnapr
+<p align="center">
+  <img src="docs/img/banner.png" alt="MaxSnapr: captura, anota y graba tu pantalla" width="860">
+</p>
 
-Aplicación de captura de pantalla, anotación y grabación de vídeo para Windows (C# / WPF, .NET 8). Es una aplicación **original** con el conjunto de funciones de un capturador profesional. No contiene código, iconos, sellos, plantillas ni otros recursos de terceros. Los iconos son glifos de la fuente del sistema *Segoe Fluent Icons* y la paleta y los diseños son propios.
+<p align="center">
+  <b>Captura, anota y graba tu pantalla en Windows.</b><br>
+  Gratis, sin anuncios y sin cuentas.
+</p>
 
-El nombre y el logotipo, un visor de captura con una huella, son un homenaje a Max. El icono se dibuja por código (`AppIcon.Render`). `MaxSnapr.exe --write-icon <ruta.ico>` regenera `src/MaxSnapr/Assets/MaxSnapr.ico` con cada tamaño, de 16 a 256 px, dibujado de forma nativa.
+<p align="center">
+  <a href="../../releases/latest"><b>⬇️ Descargar MaxSnapr para Windows</b></a>
+</p>
 
-Las funciones implementadas, y lo que queda fuera de alcance con su motivo, están en [docs/ESTADO.md](docs/ESTADO.md).
+---
 
-## Descargar
+## ✨ Qué puedes hacer
 
-En [Releases](../../releases/latest) están los dos archivos listos para usar. Los dos llevan .NET dentro, así que no hace falta instalar nada más:
+**📸 Capturar lo que quieras.** Una zona, una ventana, la pantalla completa, un menú o una página larga con desplazamiento. Pulsa `Impr Pant`, elige y listo.
 
-- **`MaxSnapr-Setup-X.Y.Z.exe`**: instalador. Pide la carpeta (por defecto la de su usuario, sin permisos de administrador), crea el acceso en el menú Inicio y se desinstala desde *Configuración > Aplicaciones*. Al desinstalar se conservan sus capturas y grabaciones.
-- **`MaxSnapr-X.Y.Z-portable.exe`**: sin instalar; se descarga y se abre.
+<p align="center"><img src="docs/img/seleccion.png" alt="Seleccionar una zona de la pantalla" width="640"></p>
 
-Requiere Windows 10 (versión 2004) o Windows 11 de 64 bits. La aplicación no está firmada digitalmente, así que la primera vez Windows SmartScreen puede avisar: pulse *Más información > Ejecutar de todas formas*. `SHA256SUMS.txt` permite comprobar que el archivo descargado no se ha alterado.
+**✏️ Explicarlo con flechas, globos y pasos.** Resalta, difumina, amplía con lupa, numera pasos y añade texto. Todo sigue siendo editable después.
 
-## Uso rápido
+<p align="center"><img src="docs/img/editor.png" alt="Editor de MaxSnapr" width="760"></p>
 
-| Acción | Atajo |
+**🎥 Grabar vídeo con tu voz y tu cámara.** Con el sonido del equipo y el micrófono. Coloca la cámara donde quieras arrastrándola, cambia su tamaño y ponle un fondo desenfocado o una imagen. Después recorta, quita tramos o conviértelo en GIF.
+
+<p align="center"><img src="docs/img/barra-grabacion.png" alt="Barra de grabación" width="640"></p>
+<p align="center"><img src="docs/img/fondos-camara.png" alt="Fondos de la cámara" width="640"></p>
+
+**🔒 Ocultar datos privados en un clic.** Correos, teléfonos, cuentas bancarias, tarjetas o caras se detectan y se difuminan solos.
+
+<p align="center"><img src="docs/img/ocultacion.png" alt="Ocultación automática de datos" width="560"></p>
+
+**🔍 Copiar el texto de cualquier imagen**, aunque sea una foto o un vídeo pausado.
+
+**📚 Encontrarlo todo después.** Cada captura y grabación se guarda sola en tu biblioteca, con búsqueda incluso por el texto que aparece en las imágenes.
+
+<p align="center"><img src="docs/img/biblioteca.png" alt="Biblioteca" width="760"></p>
+
+Y mucho más: captura de pasos para crear guías, plantillas, efectos, captura programada, envío a Word, PowerPoint, Outlook, Teams o Slack, y recibir fotos desde el móvil.
+
+---
+
+## ⬇️ Instalar en un minuto
+
+1. Entra en la [última versión](../../releases/latest) y descarga **`MaxSnapr-Setup-X.Y.Z.exe`**.
+2. Ábrelo y pulsa **Siguiente** hasta terminar. No pide permisos de administrador.
+3. ¡Listo! MaxSnapr aparece en el menú Inicio y junto al reloj, en el área de notificación.
+
+> **¿Windows muestra «Windows protegió su PC»?** Es normal en aplicaciones nuevas que todavía no están firmadas digitalmente. Pulsa **Más información** y luego **Ejecutar de todas formas**.
+
+**¿Prefieres no instalar nada?** Descarga **`MaxSnapr-X.Y.Z-portable.exe`** y ábrelo directamente.
+
+Funciona en **Windows 10 (versión 2004 o posterior) y Windows 11** de 64 bits. No necesitas instalar nada más.
+
+---
+
+## ⌨️ Atajos principales
+
+| Para… | Pulsa |
 |---|---|
-| Capturar (en cualquier aplicación) | `Impr Pant`; si está ocupado, `Ctrl+Mayús+C` |
+| Capturar | `Impr Pant` (o `Ctrl+Mayús+C`) |
+| Grabar vídeo | `Ctrl+Mayús+V` |
+| Copiar el texto de la pantalla | `Ctrl+Mayús+T` |
 | Repetir la última captura | `Ctrl+Mayús+R` |
-| Extraer texto de la pantalla | `Ctrl+Mayús+T` |
-| Grabar vídeo | `Ctrl+Mayús+V`. Tras elegir la zona aparece la barra de preparación (cámara, micrófono, audio del sistema y opciones; `Intro` graba). Durante la grabación, `Mayús+F9` pausa y `Mayús+F10` detiene; si están ocupados, `Ctrl+Mayús+F9` y `Ctrl+Mayús+F10` |
-| Captura de pasos (iniciar / detener) | `Ctrl+Mayús+P` |
-| Todos los atajos del editor | `F1` |
+| Crear una guía paso a paso | `Ctrl+Mayús+P` |
+| Ver todos los atajos (en el editor) | `F1` |
 
-- **Selector:** arrastre para una región, haga clic para una ventana o pulse `Intro`/`F` para la pantalla completa. La barra flotante permite capturar, copiar, extraer texto, grabar vídeo, capturar con desplazamiento o hacer una panorámica.
-- **Ventana de captura:** clic en el icono del área de notificación. Ofrece todos los modos, el vídeo con audio y cámara, el retraso, la repetición automática, los efectos y los preajustes.
-- **Biblioteca:** cada captura y grabación se guarda automáticamente en `Documentos\MaxSnapr\Biblioteca`. Las imágenes son `.snapr` (ZIP con la imagen original, los objetos editables en JSON y una vista previa) y los vídeos, `.mp4` o `.gif`.
+Al capturar: **arrastra** para elegir una zona, **haz clic** en una ventana o pulsa **Intro** para la pantalla completa. Todos los atajos se pueden cambiar en *Preferencias*.
 
-Requisitos: Windows 10 19041 o posterior y el *.NET 8 Desktop Runtime*, ya instalado en este equipo. Para el OCR hace falta un idioma de Windows con reconocimiento de texto (el español lo incluye).
+---
 
-## Compilar
+## ❓ Preguntas frecuentes
 
-```bash
-dotnet build src/MaxSnapr/MaxSnapr.csproj -c Debug
-```
+**¿Es gratis?**
+Sí, para uso personal y profesional, sin anuncios ni límites.
 
-Ejecutable de un solo archivo con .NET incluido (el mismo de las Releases):
+**¿Envía mis capturas o datos a algún sitio?**
+No. No tiene cuentas, publicidad ni telemetría. Todo se queda en tu equipo, y solo se comparte lo que tú decidas compartir.
 
-```bash
-dotnet publish src/MaxSnapr/MaxSnapr.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o artifacts/publish
-```
+**¿Dónde se guardan mis capturas?**
+En `Documentos\MaxSnapr\Biblioteca`. En *Preferencias › Biblioteca* puedes cambiar la carpeta y hacer o restaurar copias de seguridad.
 
-El instalador se genera con [Inno Setup 6](https://jrsoftware.org/isinfo.php) a partir de ese ejecutable:
+**¿Cómo actualizo?**
+Descarga el instalador de la última versión y ábrelo. Se instala encima y conserva tus ajustes y capturas.
 
-```bash
-iscc /DAppVersion=1.0.0 installer/MaxSnapr.iss
-```
+**¿Cómo la desinstalo?**
+Desde *Configuración › Aplicaciones › MaxSnapr › Desinstalar*. Tus capturas y grabaciones no se borran.
 
-**Publicar una versión:** suba una etiqueta `vX.Y.Z` (`git tag v1.0.1 && git push origin v1.0.1`). El flujo [Publicar versión](.github/workflows/release.yml) compila los dos archivos, calcula sus sumas SHA-256 y crea la Release.
+**¿Cómo sé que el archivo es el original?**
+Cada versión incluye `SHA256SUMS.txt` con la huella de cada archivo. En PowerShell puedes calcular la del tuyo con `Get-FileHash .\MaxSnapr-Setup-X.Y.Z.exe` y compararlas.
 
-Dependencias NuGet: `NAudio.Wasapi` (audio del sistema y del micrófono), `QRCoder` (código QR para el móvil) y `Microsoft.ML.OnnxRuntime` (fondos de la cámara con el modelo PP-HumanSeg incluido). Licencias en [docs/TERCEROS.md](docs/TERCEROS.md). El resto usa las API de Windows: GDI, WIC, Media Foundation (`Windows.Media.Transcoding`/`Editing`), OCR, FaceDetector y UI Automation.
+**¿No funciona `Impr Pant`?**
+Puede que Windows lo use para la Herramienta Recortes. MaxSnapr usa entonces `Ctrl+Mayús+C`. También puedes desactivarlo en *Configuración › Accesibilidad › Teclado*.
 
-## Pruebas
+---
 
-La autoprueba cubre la captura, las 20 herramientas, los efectos, el guardado sin pérdidas y el OCR. También el vídeo (grabar, recortar, cortar, combinar, GIF), la captura con desplazamiento, la guía de pasos, las plantillas, la ocultación inteligente y la edición de texto. Al final genera todas las ventanas como PNG. Use siempre una carpeta aislada para no tocar los ajustes, la biblioteca ni los atajos reales:
-
-```bash
-MAXSNAPR_HOME="C:\temp\maxsnapr-test\home" MAXSNAPR_NO_HOTKEYS=1 artifacts/publish/MaxSnapr.exe --selftest "C:\temp\maxsnapr-test\out"
-```
-
-`tools/selftest.sh <nombre> [exe]` compila el proyecto, ejecuta la prueba en `C:\temp\maxsnapr-tests\<nombre>` y muestra los fallos.
-
-El código de salida es el número de fallos. El detalle queda en `out\report.txt`. La prueba nunca guarda imágenes de su escritorio: el vídeo y el selector se prueban con contenido sintético.
-
-## Estructura
-
-| Carpeta | Contenido |
-|---|---|
-| `src/MaxSnapr/Capture` | Captura GDI multimonitor y por DPI, selector con sus modos, desplazamiento y unión, captura de pasos, servicio de captura |
-| `src/MaxSnapr/Video` | Grabador (MediaStreamSource + MediaTranscoder), audio y cámara, HUD, dibujar en pantalla, edición de vídeo, codificador GIF |
-| `src/MaxSnapr/Editor/Model` | Documento (imagen base, objetos, deshacer/rehacer, `.snapr`), objetos, estilos, temas y plantillas |
-| `src/MaxSnapr/Editor/Tools` | Herramientas de objetos y de píxeles |
-| `src/MaxSnapr/Editor/Raster` | Operaciones de píxel, efectos, perspectiva, filtros |
-| `src/MaxSnapr/Editor/Smart` | OCR con geometría, ocultación inteligente, editar texto, simplificar, plantillas |
-| `src/MaxSnapr/Views` | Editor, propiedades, efectos, biblioteca, reproductor, ventanas de captura, crear, lotes, temas, preferencias, móvil |
-| `src/MaxSnapr/Services` | Ajustes, portapapeles, exportación, compartir (Outlook, Office, Slack, FTP, HTTP, carpetas sincronizadas), atajos, diagnóstico |
-| `docs/` | Inventario de funciones de la referencia y estado de la implementación |
+<p align="center">
+  Hecho con 🐾 en honor a <b>Max</b>.<br>
+  <sub>© 2026 danfigi. Uso gratuito según la <a href="LICENCIA.txt">licencia de uso</a>. Créditos de componentes de terceros en <a href="docs/TERCEROS.md">TERCEROS.md</a>.</sub>
+</p>
