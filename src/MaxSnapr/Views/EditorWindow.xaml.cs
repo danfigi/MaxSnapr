@@ -1340,6 +1340,21 @@ public partial class EditorWindow : Window
 
     void Support_Click(object sender, RoutedEventArgs e) => Support.Show(this);
 
+    async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var u = await Updates.CheckAsync();
+            App.Settings.LastUpdateCheck = DateTime.Now;
+            if (u != null) { new UpdateWindow(u) { Owner = this }.Show(); return; }
+            MessageBox.Show(this, $"Tienes la última versión ({Updates.CurrentVersion.ToString(3)}).", "Buscar actualizaciones", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, "No se pudo comprobar si hay actualizaciones. Compruebe la conexión a internet.\n\n" + ex.Message, "Buscar actualizaciones", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     void About_Click(object sender, RoutedEventArgs e) => MessageBox.Show(this,
         $"MaxSnapr {typeof(App).Assembly.GetName().Version?.ToString(2)}\nCaptura, anotación y grabación de pantalla para Windows.\nEn honor a Max.\n\nAplicación original: no contiene código, iconos ni recursos de terceros."
         + (Support.Available ? "\n\nSi te resulta útil, puedes apoyarla en Ayuda > Apoyar MaxSnapr." : ""),

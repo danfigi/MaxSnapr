@@ -77,13 +77,13 @@ Al capturar: **arrastra** para elegir una zona, **haz clic** en una ventana o pu
 Sí, para uso personal y profesional, sin anuncios ni límites.
 
 **¿Envía mis capturas o datos a algún sitio?**
-No. No tiene cuentas, publicidad ni telemetría. Todo se queda en tu equipo, y solo se comparte lo que tú decidas compartir.
+No. No tiene cuentas, publicidad ni telemetría. Todo se queda en tu equipo, y solo se comparte lo que tú decidas compartir. Lo único que hace por su cuenta es comprobar una vez al día, de forma anónima, si hay una versión nueva; puedes desactivarlo en *Preferencias*.
 
 **¿Dónde se guardan mis capturas?**
 En `Documentos\MaxSnapr\Biblioteca`. En *Preferencias › Biblioteca* puedes cambiar la carpeta y hacer o restaurar copias de seguridad.
 
 **¿Cómo actualizo?**
-Descarga el instalador de la última versión y ábrelo. Se instala encima y conserva tus ajustes y capturas.
+MaxSnapr te avisa al arrancar cuando hay una versión nueva, con sus novedades. Pulsa **Descargar e instalar** y se actualiza solo, conservando tus ajustes y capturas. También puedes comprobarlo en *Ayuda › Buscar actualizaciones* o descargar el instalador de la última versión e instalarlo encima.
 
 **¿Cómo la desinstalo?**
 Desde *Configuración › Aplicaciones › MaxSnapr › Desinstalar*. Tus capturas y grabaciones no se borran.

@@ -150,6 +150,7 @@
                         <MenuItem Header="Abrir la carpeta de _registro" Click="OpenLog_Click"/>
                         <Separator x:Name="SupportSeparator"/>
                         <MenuItem x:Name="SupportMenu" Header="A_poyar MaxSnapr…" Click="Support_Click"/>
+                        <MenuItem Header="_Buscar actualizaciones…" Click="CheckUpdates_Click"/>
                         <MenuItem Header="Acerca _de MaxSnapr" Click="About_Click"/>
                     </MenuItem>
                 </Menu>

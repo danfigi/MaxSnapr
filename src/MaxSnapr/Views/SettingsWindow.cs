@@ -90,6 +90,7 @@ public sealed class SettingsWindow : Window
         p.Children.Add(theme);
         p.Children.Add(H("Inicio"));
         p.Children.Add(Toggle("Iniciar MaxSnapr con Windows (en el área de notificación)", _s.RunAtStartup, v => { _s.RunAtStartup = v; StartupService.Apply(v); }));
+        p.Children.Add(Toggle("Avisar cuando haya una versión nueva (consulta anónima, una vez al día)", _s.CheckForUpdates, v => { _s.CheckForUpdates = v; _s.SkippedVersion = null; }));
         p.Children.Add(Toggle("Mostrar el widget de captura en el borde de la pantalla", _s.ShowEdgeWidget, v => { _s.ShowEdgeWidget = v; App.Current.UpdateEdgeWidget(); }));
         p.Children.Add(Toggle("Mostrar la bienvenida y los consejos al iniciar", _s.ShowWelcome, v => _s.ShowWelcome = v));
         p.Children.Add(Toggle("Guardar en la biblioteca las imágenes copiadas en otras aplicaciones", _s.WatchClipboard, v => { _s.WatchClipboard = v; App.Current.UpdateClipboardWatcher(); }));

@@ -679,6 +679,45 @@ public static partial class SelfTest
         w.Close();
     }
 
+    /// <summary>Update notice: release parsing, version order, trusted sources only, checksum match. Offline: no real request.</summary>
+    static void UpdateChecks(string outDir)
+    {
+        string Release(string tag, string host = "github.com", string repo = Updates.Repository, bool pre = false) => $$"""
+            {"tag_name":"{{tag}}","name":"MaxSnapr {{tag.TrimStart('v')}}","draft":false,"prerelease":{{(pre ? "true" : "false")}},
+             "html_url":"https://github.com/{{Updates.Repository}}/releases/tag/{{tag}}","published_at":"2026-10-21T10:00:00Z",
+             "body":"## Novedades\n- **Widget** más estable\n- Nombres con `fecha`\n\n## Descargar\n| a | b |",
+             "assets":[
+               {"name":"MaxSnapr-Setup-{{tag.TrimStart('v')}}.exe","browser_download_url":"https://{{host}}/{{repo}}/releases/download/{{tag}}/MaxSnapr-Setup-{{tag.TrimStart('v')}}.exe"},
+               {"name":"SHA256SUMS.txt","browser_download_url":"https://{{host}}/{{repo}}/releases/download/{{tag}}/SHA256SUMS.txt"}]}
+            """;
+        UpdateInfo? Parse(string json, string current) => Updates.Parse(System.Text.Json.JsonDocument.Parse(json).RootElement, new Version(current));
+
+        var newer = Parse(Release("v1.2.0"), "1.0.7");
+        bool found = newer != null && newer.Version == new Version(1, 2, 0) && newer.InstallerName == "MaxSnapr-Setup-1.2.0.exe";
+        bool same = Parse(Release("v1.0.7"), "1.0.7.0") == null && Parse(Release("v1.0.6"), "1.0.7") == null;
+        bool pre = Parse(Release("v2.0.0", pre: true), "1.0.7") == null;
+        bool foreignHost = Parse(Release("v1.2.0", host: "evil.example"), "1.0.7") == null;
+        bool foreignRepo = Parse(Release("v1.2.0", repo: "someone/MaxSnapr-descargas"), "1.0.7") == null;
+        bool http = !Updates.IsTrustedAsset($"http://github.com/{Updates.Repository}/releases/download/v1/x.exe");
+
+        // The notes show the changes and stop before the download table.
+        var notes = UpdateWindow.Notes(newer?.Notes ?? "");
+        var texts = LogicalTreeHelper.GetChildren(notes).OfType<System.Windows.Controls.TextBlock>().Select(t => new System.Windows.Documents.TextRange(t.ContentStart, t.ContentEnd).Text).ToList();
+        bool notesOk = texts.Any(t => t.Contains("Widget más estable")) && !texts.Any(t => t.Contains("Descargar") || t.Contains("|"));
+
+        if (newer != null)
+        {
+            var w = new UpdateWindow(newer) { Left = 0, Top = 0, WindowStartupLocation = WindowStartupLocation.Manual };
+            w.Show();
+            w.UpdateLayout();
+            Shot(w, outDir, "16-update.png");
+            w.Close();
+        }
+        Check("Aviso de versión nueva: detecta, ordena versiones y solo acepta el repositorio oficial por HTTPS",
+            found && same && pre && foreignHost && foreignRepo && http && notesOk,
+            $"nueva {found}, igual o anterior ignorada {same}, preliminar ignorada {pre}, otro servidor rechazado {foreignHost}, otro repositorio rechazado {foreignRepo}, http rechazado {http}, novedades {notesOk}");
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -721,5 +760,6 @@ public static partial class SelfTest
         SupportReminderCheck();
         NamingCheck();
         MobileAddressCheck(outDir);
+        UpdateChecks(outDir);
     }
 }

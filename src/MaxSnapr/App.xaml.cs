@@ -106,6 +106,7 @@ public partial class App : Application
 
         UpdateEdgeWidget();
         UpdateClipboardWatcher();
+        Updates.ScheduleStartupCheck();
         bool trayOnly = e.Args.Contains("--tray");
         var file = e.Args.FirstOrDefault(a => !a.StartsWith("--"));
         if (file != null) ShowEditor().OpenFile(file);

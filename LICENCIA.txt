@@ -20,7 +20,7 @@ MaxSnapr es software gratuito, pero no es software libre: su autor conserva todo
    MaxSnapr incluye componentes de código abierto que se rigen por sus propias licencias (MIT y Apache 2.0). Se detallan en el archivo TERCEROS.md, que se instala junto al programa. Esta licencia no limita los derechos que esas licencias te conceden sobre dichos componentes.
 
 4. PRIVACIDAD
-   MaxSnapr no recopila datos, no tiene telemetría ni publicidad y no necesita cuenta. Solo envía información fuera de tu equipo cuando tú usas una función para compartir.
+   MaxSnapr no recopila datos, no tiene telemetría ni publicidad y no necesita cuenta. Solo se conecta a internet en dos casos: cuando tú usas una función para compartir y, una vez al día, para comprobar en su página oficial si hay una versión nueva. Esa comprobación es anónima, no envía ningún dato tuyo ni de tu equipo y se puede desactivar en Preferencias.
 
 5. SIN GARANTÍA
    MaxSnapr se ofrece «tal cual», sin garantías de ningún tipo, ni expresas ni implícitas, incluidas las de comerciabilidad, idoneidad para un fin concreto o ausencia de errores. Haz copias de seguridad de lo que te importe.
