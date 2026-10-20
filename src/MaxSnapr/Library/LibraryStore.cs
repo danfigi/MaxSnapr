@@ -73,6 +73,27 @@ public sealed class LibraryStore
         Root = root;
         Directory.CreateDirectory(root);
         Load();
+        if (AddDatesToOldNames() > 0) Save();
+    }
+
+    static readonly System.Text.RegularExpressions.Regex OldDefaultName = new(@"^(Captura|Grabación|GIF de prueba|Presentación|Combinado|Móvil) (\d{1,2}:\d{2}(:\d{2})?)$");
+
+    /// <summary>
+    /// Earlier versions named items "Captura 10:25:31" (time only). Adds the date the item was created,
+    /// so "Captura 10:25:31" becomes "Captura 20-10-2026 10.25.31". Names the user typed are left alone.
+    /// </summary>
+    internal int AddDatesToOldNames()
+    {
+        int n = 0;
+        foreach (var i in Items)
+        {
+            var m = OldDefaultName.Match(i.Name);
+            if (!m.Success) continue;
+            var time = m.Groups[2].Value.Replace(':', '.');
+            i.Name = $"{m.Groups[1].Value} {i.Created:dd-MM-yyyy} {time}";
+            n++;
+        }
+        return n;
     }
 
     public static void Initialize(string root) => Instance = new LibraryStore(root);
@@ -118,12 +139,13 @@ public sealed class LibraryStore
     public LibraryItem Add(EditorDocument doc, string sourceTitle, string sourceApp, string sourceUrl = "")
     {
         var now = DateTime.Now;
-        var rel = Path.Combine(now.ToString("yyyy-MM"), $"Captura {now:yyyy-MM-dd HH.mm.ss.fff}{EditorDocument.Extension}");
+        // Unique on disk even for several captures in the same second; the visible name has no milliseconds.
+        var rel = Path.Combine(now.ToString("yyyy-MM"), $"Captura {Naming.Stamp(now)}.{now:fff}{EditorDocument.Extension}");
         var item = new LibraryItem
         {
             Id = doc.LibraryId, FileName = rel, Created = now, Modified = now, Width = doc.Width, Height = doc.Height,
             SourceTitle = sourceTitle, SourceApp = sourceApp,
-            Name = string.IsNullOrWhiteSpace(sourceTitle) ? $"Captura {now:HH:mm:ss}" : sourceTitle,
+            Name = string.IsNullOrWhiteSpace(sourceTitle) ? Naming.Default("Captura", now) : sourceTitle,
         };
         item.SourceUrl = sourceUrl;
         doc.Save(item.FullPath);
@@ -208,10 +230,11 @@ public sealed class LibraryStore
             full = dest;
         }
         bool gif = Path.GetExtension(full).Equals(".gif", StringComparison.OrdinalIgnoreCase);
+        var now = DateTime.Now;
         var item = new LibraryItem
         {
-            FileName = Path.GetRelativePath(Root, full), Created = DateTime.Now, Modified = DateTime.Now, Kind = gif ? "GIF" : "Vídeo",
-            Name = string.IsNullOrWhiteSpace(sourceTitle) ? Path.GetFileNameWithoutExtension(full) : $"{sourceTitle} {DateTime.Now:HH:mm}", SourceTitle = sourceTitle,
+            FileName = Path.GetRelativePath(Root, full), Created = now, Modified = now, Kind = gif ? "GIF" : "Vídeo",
+            Name = string.IsNullOrWhiteSpace(sourceTitle) ? Path.GetFileNameWithoutExtension(full) : Naming.Default(sourceTitle, now), SourceTitle = sourceTitle,
         };
         BitmapSource thumb;
         if (gif)

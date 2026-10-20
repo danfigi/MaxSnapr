@@ -451,7 +451,7 @@ public sealed class ImagesToVideoWindow : Window
                     ExportService.Save(EditorWindow.RenderItem(i), p, 95);
                     paths.Add(p);
                 }
-                var outp = Path.Combine(LibraryStore.Instance.Root, DateTime.Now.ToString("yyyy-MM"), $"Presentación {DateTime.Now:yyyy-MM-dd HH.mm.ss}.mp4");
+                var outp = Path.Combine(LibraryStore.Instance.Root, DateTime.Now.ToString("yyyy-MM"), $"{Naming.Default("Presentación", DateTime.Now)}.mp4");
                 await Video.VideoTools.ImagesToVideoAsync(paths, TimeSpan.FromSeconds(seconds), outp, new Progress<double>(p => status.Text = $"Generando… {p:P0}"));
                 var item = await LibraryStore.Instance.AddMediaAsync(outp, "Presentación");
                 App.Current.ShowEditor().OpenItem(item);

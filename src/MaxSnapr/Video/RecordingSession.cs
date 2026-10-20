@@ -288,7 +288,7 @@ public sealed class RecordingSession
     async Task BeginRecorderAsync()
     {
         var dir = Path.Combine(LibraryStore.Instance.Root, DateTime.Now.ToString("yyyy-MM"));
-        _path = Path.Combine(dir, $"Vídeo {DateTime.Now:yyyy-MM-dd HH.mm.ss}.mp4");
+        _path = Path.Combine(dir, $"{Naming.Default("Vídeo", DateTime.Now)}.mp4");
         _rec = new VideoRecorder(new RecorderOptions
         {
             Region = _region, Fps = _s.Fps, CaptureCursor = _s.Cursor, HighlightClicks = _s.HighlightClicks,

@@ -93,6 +93,15 @@ public sealed class ShareItem
 
 public static class Naming
 {
+    /// <summary>
+    /// Date and time for automatic names, e.g. "20-10-2026 10.25.31". Day-month-year reads naturally in Spanish,
+    /// and the dots keep it valid in file names (Windows forbids ':' and '/').
+    /// </summary>
+    public static string Stamp(DateTime t, bool seconds = true) => t.ToString(seconds ? "dd-MM-yyyy HH.mm.ss" : "dd-MM-yyyy HH.mm");
+
+    /// <summary>Name for something captured or recorded without a title of its own: "Captura 20-10-2026 10.25.31".</summary>
+    public static string Default(string kind, DateTime t) => $"{kind} {Stamp(t)}";
+
     public static string Safe(string s)
     {
         var bad = Path.GetInvalidFileNameChars();
@@ -108,7 +117,7 @@ public static class Naming
         var now = DateTime.Now;
         var s = pattern
             .Replace("{nombre}", string.IsNullOrWhiteSpace(name) ? "Captura" : name)
-            .Replace("{fecha}", now.ToString("yyyy-MM-dd")).Replace("{hora}", now.ToString("HH.mm.ss"))
+            .Replace("{fecha}", now.ToString("dd-MM-yyyy")).Replace("{hora}", now.ToString("HH.mm.ss"))
             .Replace("{año}", now.ToString("yyyy")).Replace("{mes}", now.ToString("MM")).Replace("{día}", now.ToString("dd"))
             .Replace("{app}", app).Replace("{ventana}", title)
             .Replace("{ancho}", w.ToString()).Replace("{alto}", h.ToString())

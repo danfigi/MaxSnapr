@@ -644,6 +644,24 @@ public static partial class SelfTest
         Check("Widget del borde: siempre vuelve", allOk, string.Join("; ", results));
     }
 
+    /// <summary>Automatic names carry the date as well as the time, and old time-only names get their date added.</summary>
+    static void NamingCheck()
+    {
+        var store = LibraryStore.Instance;
+        var item = store.Add(new EditorDocument(SampleScreen(120, 80)), "", "Prueba");
+        var today = DateTime.Now.ToString("dd-MM-yyyy");
+        bool newName = item.Name.StartsWith("Captura " + today + " ") && System.Text.RegularExpressions.Regex.IsMatch(item.Name, @"^Captura \d{2}-\d{2}-\d{4} \d{2}\.\d{2}\.\d{2}$");
+        bool fileName = Path.GetFileName(item.FileName).StartsWith("Captura " + today + " ");
+
+        var old = store.Add(new EditorDocument(SampleScreen(120, 80)), "", "Prueba");
+        old.Name = "Captura 09:41:07";
+        old.Created = new DateTime(2026, 3, 5, 9, 41, 7);
+        var custom = store.Add(new EditorDocument(SampleScreen(120, 80)), "Informe de ventas", "Prueba");
+        int changed = store.AddDatesToOldNames();
+        bool migrated = old.Name == "Captura 05-03-2026 09.41.07" && custom.Name == "Informe de ventas" && changed == 1;
+        Check("Nombres con fecha y hora", newName && fileName && migrated, $"{item.Name} · {Path.GetFileName(item.FileName)} · antiguo → {old.Name}");
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -684,5 +702,6 @@ public static partial class SelfTest
         await IconCheck(outDir);
         await EdgeWidgetResilienceCheck();
         SupportReminderCheck();
+        NamingCheck();
     }
 }
