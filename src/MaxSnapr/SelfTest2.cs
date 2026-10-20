@@ -697,12 +697,12 @@ public static partial class SelfTest
         bool same = Parse(Release("v1.0.7"), "1.0.7.0") == null && Parse(Release("v1.0.6"), "1.0.7") == null;
         bool pre = Parse(Release("v2.0.0", pre: true), "1.0.7") == null;
         bool foreignHost = Parse(Release("v1.2.0", host: "evil.example"), "1.0.7") == null;
-        bool foreignRepo = Parse(Release("v1.2.0", repo: "someone/MaxSnapr-public"), "1.0.7") == null;
+        bool foreignRepo = Parse(Release("v1.2.0", repo: "someone/MaxSnapr"), "1.0.7") == null;
         bool http = !Updates.IsTrustedAsset($"http://github.com/{Updates.Repository}/releases/download/v1/x.exe");
-        bool former = Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas/releases/download/v1.2.0/SHA256SUMS.txt")
-            && Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-public/releases/download/v1.2.0/SHA256SUMS.txt")
-            && Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr/releases/download/v1.2.0/SHA256SUMS.txt")
-            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas-falso/releases/download/v1.2.0/x.exe")
+        // Only this repository's release files: not deleted download pages, look-alike names or other paths.
+        bool former = Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr/releases/download/v1.2.0/SHA256SUMS.txt")
+            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-public/releases/download/v1.2.0/SHA256SUMS.txt")
+            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas/releases/download/v1.2.0/SHA256SUMS.txt")
             && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-falso/releases/download/v1.2.0/x.exe")
             && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr/blob/main/x.exe");
 
@@ -721,7 +721,7 @@ public static partial class SelfTest
         }
         Check("Aviso de versión nueva: detecta, ordena versiones y solo acepta el repositorio oficial por HTTPS",
             found && same && pre && foreignHost && foreignRepo && http && former && notesOk,
-            $"nueva {found}, igual o anterior ignorada {same}, preliminar ignorada {pre}, otro servidor rechazado {foreignHost}, otro repositorio rechazado {foreignRepo}, http rechazado {http}, nombre anterior aceptado {former}, novedades {notesOk}");
+            $"nueva {found}, igual o anterior ignorada {same}, preliminar ignorada {pre}, otro servidor rechazado {foreignHost}, otro repositorio rechazado {foreignRepo}, http rechazado {http}, solo el repositorio oficial {former}, novedades {notesOk}");
     }
 
     static async Task ExtraWindowShots(string outDir)

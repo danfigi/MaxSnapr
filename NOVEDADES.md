@@ -9,7 +9,7 @@ Cada versión tiene su apartado `## X.Y.Z`. Al publicar, ese texto aparece en la
 
 ## 1.1.1
 
-- La página de descargas se llama ahora **MaxSnapr-public**: https://github.com/danfigi/MaxSnapr-public
+- Cambio en la página de descargas.
 
 ## 1.1.0
 

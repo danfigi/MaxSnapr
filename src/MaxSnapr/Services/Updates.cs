@@ -22,8 +22,6 @@ public sealed record UpdateInfo(Version Version, string Tag, string Title, strin
 public static class Updates
 {
     public const string Repository = "danfigi/MaxSnapr";
-    /// <summary>Earlier public download pages, still trusted so links and older copies keep working.</summary>
-    static readonly string[] FormerRepositories = { "danfigi/MaxSnapr-public", "danfigi/MaxSnapr-descargas" };
     public static string ReleasesPage => $"https://github.com/{Repository}/releases";
     static string LatestApi => $"https://api.github.com/repos/{Repository}/releases/latest";
 
@@ -78,8 +76,7 @@ public static class Updates
     /// <summary>Only release assets of our own public repository, over HTTPS.</summary>
     internal static bool IsTrustedAsset(string url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps && u.Host == "github.com"
-        && new[] { Repository }.Concat(FormerRepositories)
-            .Any(r => u.AbsolutePath.StartsWith($"/{r}/releases/download/", StringComparison.OrdinalIgnoreCase));
+        && u.AbsolutePath.StartsWith($"/{Repository}/releases/download/", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Downloads the installer, verifies its SHA-256 against the published list and returns its path.</summary>
     public static async Task<string> DownloadAsync(UpdateInfo u, IProgress<double>? progress, CancellationToken ct)

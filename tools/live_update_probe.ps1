@@ -1,6 +1,6 @@
 # Checks the real update path against the public downloads repo: latest-release lookup, trusted asset URLs,
 # checksum file format and an end-to-end SHA-256 match. Read-only; downloads to a temp folder that is removed.
-param([string]$Repo = 'danfigi/MaxSnapr-public')
+param([string]$Repo = 'danfigi/MaxSnapr')
 $ErrorActionPreference = 'Stop'
 $h = @{ 'User-Agent' = 'MaxSnapr-probe'; 'Accept' = 'application/vnd.github+json' }
 $r = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/latest" -Headers $h
