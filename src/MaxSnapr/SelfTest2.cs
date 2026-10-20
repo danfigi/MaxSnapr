@@ -542,7 +542,8 @@ public static partial class SelfTest
     /// </summary>
     static async Task EdgeWidgetResilienceCheck()
     {
-        if (EdgeWidget.ForegroundIsFullScreen()) { Check("Widget del borde: siempre vuelve", true, "omitida: hay una aplicación a pantalla completa"); return; }
+        // The user may have a full-screen window open (a browser, a slide show): the test must not depend on it.
+        EdgeWidget.IgnoreFullScreen = true;
         bool previous = App.Settings.ShowEdgeWidget;
         App.Settings.ShowEdgeWidget = true;
         var results = new List<string>();
@@ -569,7 +570,8 @@ public static partial class SelfTest
                 var e = w.ExpectedBounds();
                 bool topmost = (Native.NativeMethods.GetWindowLong(h, Native.NativeMethods.GWL_EXSTYLE) & 0x8) != 0;
                 bool cloaked = Native.NativeMethods.DwmGetWindowAttribute(h, 14, out int c, sizeof(int)) == 0 && c != 0;
-                return topmost && !cloaked && Math.Abs(r.Left - e.X) <= 2 && Math.Abs(r.Top - e.Y) <= 2;
+                return topmost && !cloaked && Math.Abs(r.Left - e.X) <= 2 && Math.Abs(r.Top - e.Y) <= 2
+                    && Math.Abs(r.Width - e.Width) <= 2 && Math.Abs(r.Height - e.Height) <= 2;
             }
 
             // A healthy widget must be left alone (no flicker, no log noise).
@@ -595,6 +597,25 @@ public static partial class SelfTest
             await Break("minimizado", () => ShowWindow(h, 6 /*SW_MINIMIZE*/));
             await Break("fuera de pantalla", () => Native.NativeMethods.SetWindowPos(h, IntPtr.Zero, -6000, -6000, 0, 0, 0x1 | 0x4 | 0x10 /*NOSIZE|NOZORDER|NOACTIVATE*/));
             await Break("sin siempre visible", () => Native.NativeMethods.SetWindowPos(h, new IntPtr(-2) /*HWND_NOTOPMOST*/, 0, 0, 0, 0, 0x1 | 0x2 | 0x10));
+            // What happened after Windows started: the window got a size computed with another scale.
+            // WPF re-applies the content size after a plain resize, so force the case WPF cannot undo by itself:
+            // fixed sizing with the wrong size, as when a scale change arrives right after Windows starts.
+            // Fixed sizing with the physical size of another scale: this is how the widget looked after a cold start.
+            // Whether WPF or the watchdog puts it right, it must end at its content size without hovering it.
+            async Task WrongSize(string name, double k)
+            {
+                Native.NativeMethods.GetWindowRect(h, out var before);
+                w.SizeToContent = SizeToContent.Manual;
+                Native.NativeMethods.SetWindowPos(h, IntPtr.Zero, before.Left, before.Top, (int)(before.Width * k), (int)(before.Height * k), 0x4 | 0x10);
+                var why = w.EnsureVisible();
+                await Pump(300);
+                why ??= w.EnsureVisible();
+                bool ok = InPlace() && w.SizeToContent == SizeToContent.WidthAndHeight;
+                allOk &= ok;
+                results.Add($"{name}: {(ok ? "vuelve a su tamaño" + (why != null ? $" ({why})" : "") : "NO vuelve " + State())}");
+            }
+            await WrongSize("más grande de la cuenta", 1.4);
+            await WrongSize("más pequeño de la cuenta", 0.6);
             await Break("invisible (cloak)", () => { int on = 1; DwmSetWindowAttribute(h, 13, ref on, sizeof(int)); });
 
             // Minimise and close requests (Win+M, Alt+F4) are refused outright.
@@ -618,6 +639,7 @@ public static partial class SelfTest
         {
             App.Settings.ShowEdgeWidget = previous;
             App.Current.UpdateEdgeWidget();
+            EdgeWidget.IgnoreFullScreen = false;
         }
         Check("Widget del borde: siempre vuelve", allOk, string.Join("; ", results));
     }

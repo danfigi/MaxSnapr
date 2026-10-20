@@ -55,6 +55,9 @@ public sealed class EdgeWidget : Window
         {
             Background = new SolidColorBrush(Color.FromArgb(0xF0, 0x24, 0x27, 0x2B)), CornerRadius = new CornerRadius(0, 0, 10, 10),
             Child = new StackPanel { Children = { _buttons, grip } }, MinWidth = 90,
+            // Drawn at its own size even if the window is bigger: Windows creates windows at a minimum of
+            // about 136×39, and a stretched tab is what looked too big right after Windows started.
+            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top,
         };
         Content = _tab;
         MouseEnter += (_, _) => { _buttons.Visibility = Visibility.Visible; Reposition(); };
@@ -79,8 +82,11 @@ public sealed class EdgeWidget : Window
             SystemEvents.PowerModeChanged += OnSystemChange;
         };
         SizeChanged += (_, _) => Reposition();
-        // The first layout pass can still change the size after Loaded; place it again once it has been drawn.
-        ContentRendered += (_, _) => Reposition();
+        // The first layout pass can leave the window at Windows' minimum size; shrink it to the tab once drawn.
+        ContentRendered += (_, _) => FitToContent();
+        // Right after Windows starts, the window can be created at the system scale and only later receive
+        // the monitor's: re-measure and re-place whenever the scale it is drawn with changes.
+        DpiChanged += (_, _) => Dispatcher.BeginInvoke(FitToContent, DispatcherPriority.Loaded);
         _watchdog.Tick += (_, _) => EnsureVisible();
         Closed += (_, _) =>
         {
@@ -116,22 +122,64 @@ public sealed class EdgeWidget : Window
     /// <summary>Shows the buttons as hovering does (used by the self-test).</summary>
     internal void Expand() { _buttons.Visibility = Visibility.Visible; Reposition(); }
 
-    /// <summary>Where the widget belongs: centred on the top edge of the primary screen's work area, in physical pixels.</summary>
+    /// <summary>
+    /// Where the widget belongs: centred on the top edge of the primary screen's work area, in physical pixels.
+    /// The size is the content's, at the scale WPF actually draws this window with (which, just after
+    /// Windows starts, can differ from the monitor's for a moment).
+    /// </summary>
     internal Int32Rect ExpectedBounds()
     {
         MonitorInfo? primary = null;
         foreach (var m in ScreenCapturer.GetMonitors()) if (m.Primary) primary = m;
         primary ??= new MonitorInfo(new Int32Rect(0, 0, 1920, 1080), new Int32Rect(0, 0, 1920, 1040), 1, "", true);
         var wa = primary.WorkArea;
-        int w = Math.Max(1, (int)Math.Round(ActualWidth * primary.Scale)), h = Math.Max(1, (int)Math.Round(ActualHeight * primary.Scale));
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var content = ContentSize();
+        int w = Math.Max(1, (int)Math.Round(content.Width * dpi.DpiScaleX)), h = Math.Max(1, (int)Math.Round(content.Height * dpi.DpiScaleY));
         return new Int32Rect(wa.X + (wa.Width - w) / 2, wa.Y, w, h);
+    }
+
+    /// <summary>Size the tab needs, in device-independent units, whatever size the window currently has.</summary>
+    Size ContentSize()
+    {
+        // Measure a stand-in copy of the layout state: measuring _tab itself with infinite space would
+        // replace the window's own layout result, and collapsed buttons would count as zero.
+        if (!_tab.IsMeasureValid) _tab.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        var d = _tab.DesiredSize;
+        return d.Width > 0 && d.Height > 0 ? d : new Size(ActualWidth, ActualHeight);
     }
 
     void Reposition()
     {
         if (_hwnd == IntPtr.Zero || ActualWidth <= 0) return;
-        // Physical coordinates keep it right across screens with different scales; this also re-asserts always-on-top.
-        Video.CaptureExclusion.PlacePhysical(this, ExpectedBounds());
+        var e = ExpectedBounds();
+        // Move only: the size is WPF's (SizeToContent). Forcing a size computed with another scale is what left
+        // the widget slightly too big after Windows started. This also re-asserts always-on-top.
+        NativeMethods.SetWindowPos(_hwnd, NativeMethods.HWND_TOPMOST, e.X, e.Y, 0, 0, 0x1 /*SWP_NOSIZE*/ | NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_SHOWWINDOW);
+    }
+
+    /// <summary>Makes the window exactly as big as its content again and puts it back in place.</summary>
+    void FitToContent()
+    {
+        // An outside resize (or a scale change) switches WPF to a fixed size; restore content sizing.
+        SizeToContent = SizeToContent.Manual;
+        var c = ContentSize();
+        Width = c.Width;
+        Height = c.Height;
+        SizeToContent = SizeToContent.WidthAndHeight;
+        UpdateLayout();
+        Reposition();
+    }
+
+    /// <summary>True when the window's physical size does not match its content at the current scale.</summary>
+    bool WrongSize(NativeMethods.RECT r)
+    {
+        var e = ExpectedBounds();
+        // Only what is on screen counts. When WPF drops content sizing but the size is still right, put it
+        // back quietly so the next outside resize is undone by WPF itself.
+        bool wrong = Math.Abs(r.Width - e.Width) > 2 || Math.Abs(r.Height - e.Height) > 2;
+        if (!wrong && SizeToContent != SizeToContent.WidthAndHeight) SizeToContent = SizeToContent.WidthAndHeight;
+        return wrong;
     }
 
     /// <summary>Puts the widget back if anything has hidden, moved, covered or minimised it. Returns what was fixed, or null.</summary>
@@ -157,16 +205,23 @@ public sealed class EdgeWidget : Window
         }
         if ((NativeMethods.GetWindowLong(_hwnd, NativeMethods.GWL_EXSTYLE) & 0x8 /*WS_EX_TOPMOST*/) == 0) reason ??= "sin «siempre visible»";
 
+        if (_buttons.IsVisible && !IsMouseOver) Collapse();
         var expected = ExpectedBounds();
+        bool resize = false;
         if (NativeMethods.GetWindowRect(_hwnd, out var r))
         {
-            if (Math.Abs(r.Left - expected.X) > 2 || Math.Abs(r.Top - expected.Y) > 2) reason ??= "fuera de su sitio";
+            if (WrongSize(r))
+            {
+                var c = ContentSize();
+                reason ??= $"tamaño incorrecto: {r.Width}×{r.Height} en lugar de {expected.Width}×{expected.Height} (contenido {c.Width:0.#}×{c.Height:0.#}, escala {VisualTreeHelper.GetDpi(this).DpiScaleX:0.##})";
+                resize = true;
+            }
+            else if (Math.Abs(r.Left - expected.X) > 2 || Math.Abs(r.Top - expected.Y) > 2) reason ??= "fuera de su sitio";
             else if (Covered(r)) reason ??= "tapado por otra ventana";
         }
-        if (_buttons.IsVisible && !IsMouseOver) Collapse();
         if (reason == null) return null;
 
-        Reposition();
+        if (resize) FitToContent(); else Reposition();
         Repairs++;
         LastRepair = reason;
         Log.Info($"Widget del borde restaurado ({reason})");
@@ -185,10 +240,33 @@ public sealed class EdgeWidget : Window
 
     static bool Cloaked(IntPtr h) => NativeMethods.DwmGetWindowAttribute(h, 14 /*DWMWA_CLOAKED*/, out int c, sizeof(int)) == 0 && c != 0;
 
+    /// <summary>
+    /// True when the foreground window really covers its whole monitor (a game, a video, a slide show).
+    /// Windows' own "busy" state is not enough: it is also set by "do not disturb" and by focus sessions,
+    /// which would hide the widget for no visible reason.
+    /// </summary>
+    /// <summary>Self-test only: behave as if no full-screen app were open, whatever the user has in front.</summary>
+    internal static bool IgnoreFullScreen { get; set; }
+
     internal static bool ForegroundIsFullScreen()
     {
-        // QUNS_BUSY (2), QUNS_RUNNING_D3D_FULL_SCREEN (3) and QUNS_PRESENTATION_MODE (4).
-        return SHQueryUserNotificationState(out int state) == 0 && state is 2 or 3 or 4;
+        if (IgnoreFullScreen) return false;
+        // QUNS_RUNNING_D3D_FULL_SCREEN (3) and QUNS_PRESENTATION_MODE (4) are always full screen.
+        if (SHQueryUserNotificationState(out int state) == 0 && state is 3 or 4) return true;
+        var fg = NativeMethods.GetForegroundWindow();
+        if (fg == IntPtr.Zero || fg == NativeMethods.GetDesktopWindow() || !NativeMethods.GetWindowRect(fg, out var r)) return false;
+        var cls = new System.Text.StringBuilder(64);
+        NativeMethods.GetClassName(fg, cls, cls.Capacity);
+        // The desktop and the taskbar span the screen but are not full-screen apps.
+        if (cls.ToString() is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd") return false;
+        GetWindowThreadProcessId(fg, out uint pid);
+        if (pid == (uint)Environment.ProcessId) return false;
+        foreach (var m in ScreenCapturer.GetMonitors())
+        {
+            var b = m.Bounds;
+            if (r.Left <= b.X && r.Top <= b.Y && r.Right >= b.X + b.Width && r.Bottom >= b.Y + b.Height && m.Primary) return true;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ virtual desktops (documented IVirtualDesktopManager)
