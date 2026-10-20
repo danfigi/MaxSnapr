@@ -235,7 +235,13 @@ public sealed class EdgeWidget : Window
         var top = NativeMethods.GetAncestor(NativeMethods.WindowFromPoint(p), 2 /*GA_ROOT*/);
         if (top == IntPtr.Zero || top == _hwnd) return false;
         GetWindowThreadProcessId(top, out uint pid);
-        return pid != (uint)Environment.ProcessId; // our own menus and tooltips do not count
+        if (pid == (uint)Environment.ProcessId) return false; // our own menus and tooltips do not count
+        // Another MaxSnapr's widget in the same spot (an isolated test copy next to the real app) is not covering it.
+        var cls = new System.Text.StringBuilder(128);
+        NativeMethods.GetClassName(top, cls, cls.Capacity);
+        try { if (cls.ToString().StartsWith("HwndWrapper[") && System.Diagnostics.Process.GetProcessById((int)pid).ProcessName.Equals("MaxSnapr", StringComparison.OrdinalIgnoreCase)) return false; }
+        catch (ArgumentException) { }
+        return true;
     }
 
     static bool Cloaked(IntPtr h) => NativeMethods.DwmGetWindowAttribute(h, 14 /*DWMWA_CLOAKED*/, out int c, sizeof(int)) == 0 && c != 0;
