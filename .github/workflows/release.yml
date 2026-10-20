@@ -129,4 +129,4 @@ jobs:
           GH_TOKEN: ${{ secrets.DESCARGAS_TOKEN }}
         run: |
           if (-not $env:GH_TOKEN) { throw 'Falta el secreto DESCARGAS_TOKEN: la versión no se ha publicado en la página de descargas.' }
-          gh release create $env:GITHUB_REF_NAME out/* --repo danfigi/MaxSnapr-descargas --title "MaxSnapr ${{ steps.v.outputs.version }}" --notes-file release-notes.md --latest
+          gh release create $env:GITHUB_REF_NAME out/* --repo danfigi/MaxSnapr-public --title "MaxSnapr ${{ steps.v.outputs.version }}" --notes-file release-notes.md --latest

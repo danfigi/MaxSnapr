@@ -2,6 +2,10 @@
 
 Cada versión tiene su apartado `## X.Y.Z`. Al publicar, ese texto aparece en la página de descargas y en la ventana «Hay una versión nueva» de la aplicación.
 
+## 1.1.1
+
+- La página de descargas se llama ahora **MaxSnapr-public**: https://github.com/danfigi/MaxSnapr-public
+
 ## 1.1.0
 
 - **Aviso de versiones nuevas**: al arrancar, MaxSnapr te avisa si hay una versión más reciente, te enseña sus novedades y se actualiza con un clic, conservando tus ajustes y capturas. La comprobación es anónima y se puede desactivar en *Preferencias*.

@@ -11,7 +11,7 @@
     <ApplicationIcon>Assets/MaxSnapr.ico</ApplicationIcon>
     <AssemblyName>MaxSnapr</AssemblyName>
     <RootNamespace>MaxSnapr</RootNamespace>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Product>MaxSnapr</Product>
     <AssemblyTitle>MaxSnapr</AssemblyTitle>
     <Description>Captura, anotación y grabación de pantalla</Description>

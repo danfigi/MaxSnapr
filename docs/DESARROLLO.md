@@ -47,11 +47,11 @@ El mapa de nombres (`obj/obfuscar-Release/out/Mapping.txt`) permite interpretar 
 
 ## Aviso de actualizaciones
 
-Al arrancar (como mucho una vez al día) la app consulta, de forma anónima, la última Release de [danfigi/MaxSnapr-descargas](https://github.com/danfigi/MaxSnapr-descargas), el repositorio público solo de descargas. Si es más nueva, muestra sus novedades y puede descargar e instalar el instalador. Solo lo acepta desde esa página por HTTPS y si su SHA-256 coincide con `SHA256SUMS.txt`. Se desactiva en *Preferencias* y también está en *Ayuda › Buscar actualizaciones* (`Services/Updates.cs`, `Views/UpdateWindow.cs`).
+Al arrancar (como mucho una vez al día) la app consulta, de forma anónima, la última Release de [danfigi/MaxSnapr-public](https://github.com/danfigi/MaxSnapr-public), el repositorio público solo de descargas. Si es más nueva, muestra sus novedades y puede descargar e instalar el instalador. Solo lo acepta desde esa página por HTTPS y si su SHA-256 coincide con `SHA256SUMS.txt`. Se desactiva en *Preferencias* y también está en *Ayuda › Buscar actualizaciones* (`Services/Updates.cs`, `Views/UpdateWindow.cs`).
 
 El texto de cada versión sale de su apartado `## X.Y.Z` en [NOVEDADES.md](../NOVEDADES.md): escríbalo antes de crear la etiqueta.
 
-El flujo de publicación sube la versión al repositorio privado y a la página pública. Para la pública usa el secreto `DESCARGAS_TOKEN`: un token *fine-grained* limitado a `danfigi/MaxSnapr-descargas` con permiso **Contents: Read and write**. Si falta o caduca, el flujo falla con un aviso y la página pública no se actualiza.
+El flujo de publicación sube la versión al repositorio privado y a la página pública. Para la pública usa el secreto `DESCARGAS_TOKEN`: un token *fine-grained* limitado a `danfigi/MaxSnapr-public` con permiso **Contents: Read and write**. Si falta o caduca, el flujo falla con un aviso y la página pública no se actualiza.
 
 ## Publicar una versión
 

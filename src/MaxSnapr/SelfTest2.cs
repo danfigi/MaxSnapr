@@ -697,8 +697,10 @@ public static partial class SelfTest
         bool same = Parse(Release("v1.0.7"), "1.0.7.0") == null && Parse(Release("v1.0.6"), "1.0.7") == null;
         bool pre = Parse(Release("v2.0.0", pre: true), "1.0.7") == null;
         bool foreignHost = Parse(Release("v1.2.0", host: "evil.example"), "1.0.7") == null;
-        bool foreignRepo = Parse(Release("v1.2.0", repo: "someone/MaxSnapr-descargas"), "1.0.7") == null;
+        bool foreignRepo = Parse(Release("v1.2.0", repo: "someone/MaxSnapr-public"), "1.0.7") == null;
         bool http = !Updates.IsTrustedAsset($"http://github.com/{Updates.Repository}/releases/download/v1/x.exe");
+        bool former = Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas/releases/download/v1.2.0/SHA256SUMS.txt")
+            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas-falso/releases/download/v1.2.0/x.exe");
 
         // The notes show the changes and stop before the download table.
         var notes = UpdateWindow.Notes(newer?.Notes ?? "");
@@ -714,8 +716,8 @@ public static partial class SelfTest
             w.Close();
         }
         Check("Aviso de versión nueva: detecta, ordena versiones y solo acepta el repositorio oficial por HTTPS",
-            found && same && pre && foreignHost && foreignRepo && http && notesOk,
-            $"nueva {found}, igual o anterior ignorada {same}, preliminar ignorada {pre}, otro servidor rechazado {foreignHost}, otro repositorio rechazado {foreignRepo}, http rechazado {http}, novedades {notesOk}");
+            found && same && pre && foreignHost && foreignRepo && http && former && notesOk,
+            $"nueva {found}, igual o anterior ignorada {same}, preliminar ignorada {pre}, otro servidor rechazado {foreignHost}, otro repositorio rechazado {foreignRepo}, http rechazado {http}, nombre anterior aceptado {former}, novedades {notesOk}");
     }
 
     static async Task ExtraWindowShots(string outDir)
