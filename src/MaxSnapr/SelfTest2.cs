@@ -700,7 +700,11 @@ public static partial class SelfTest
         bool foreignRepo = Parse(Release("v1.2.0", repo: "someone/MaxSnapr-public"), "1.0.7") == null;
         bool http = !Updates.IsTrustedAsset($"http://github.com/{Updates.Repository}/releases/download/v1/x.exe");
         bool former = Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas/releases/download/v1.2.0/SHA256SUMS.txt")
-            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas-falso/releases/download/v1.2.0/x.exe");
+            && Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-public/releases/download/v1.2.0/SHA256SUMS.txt")
+            && Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr/releases/download/v1.2.0/SHA256SUMS.txt")
+            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-descargas-falso/releases/download/v1.2.0/x.exe")
+            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr-falso/releases/download/v1.2.0/x.exe")
+            && !Updates.IsTrustedAsset("https://github.com/danfigi/MaxSnapr/blob/main/x.exe");
 
         // The notes show the changes and stop before the download table.
         var notes = UpdateWindow.Notes(newer?.Notes ?? "");

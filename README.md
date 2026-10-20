@@ -9,6 +9,8 @@
 
 <p align="center">
   <a href="../../releases/latest"><b>⬇️ Descargar MaxSnapr para Windows</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://buymeacoffee.com/danfigi"><b>☕ Invítame a un café</b></a>
 </p>
 
 ---
@@ -74,7 +76,7 @@ Al capturar: **arrastra** para elegir una zona, **haz clic** en una ventana o pu
 ## ❓ Preguntas frecuentes
 
 **¿Es gratis?**
-Sí, para uso personal y profesional, sin anuncios ni límites.
+Sí, para uso personal y profesional, sin anuncios ni límites. Si te resulta útil y quieres apoyar su desarrollo, puedes [invitarme a un café](https://buymeacoffee.com/danfigi) ☕. Es totalmente voluntario.
 
 **¿Envía mis capturas o datos a algún sitio?**
 No. No tiene cuentas, publicidad ni telemetría. Todo se queda en tu equipo, y solo se comparte lo que tú decidas compartir. Lo único que hace por su cuenta es comprobar una vez al día, de forma anónima, si hay una versión nueva; puedes desactivarlo en *Preferencias*.
@@ -96,7 +98,19 @@ Puede que Windows lo use para la Herramienta Recortes. MaxSnapr usa entonces `Ct
 
 ---
 
+---
+
+## ☕ Apoyar MaxSnapr
+
+MaxSnapr es gratuito y seguirá siéndolo. Si te ahorra tiempo, puedes apoyar su desarrollo con un café: ayuda a dedicarle más horas, añadir funciones y pagar la firma digital que quitará el aviso de Windows al instalarla.
+
+<p align="center"><a href="https://buymeacoffee.com/danfigi"><b>☕ Invítame a un café en Buy Me a Coffee</b></a></p>
+
+¿Has encontrado un fallo o tienes una idea? Cuéntamelo en [Issues](../../issues).
+
+---
+
 <p align="center">
   Hecho con 🐾 en honor a <b>Max</b>.<br>
-  <sub>© 2026 danfigi. Uso gratuito según la <a href="LICENCIA.txt">licencia de uso</a>. Créditos de componentes de terceros en <a href="docs/TERCEROS.md">TERCEROS.md</a>.</sub>
+  <sub>© 2026 danfigi. Todos los derechos reservados. Uso gratuito según la <a href="LICENCIA.txt">licencia de uso</a>: el código se puede consultar, pero no copiar, modificar ni redistribuir sin permiso. Créditos de componentes de terceros en <a href="docs/TERCEROS.md">TERCEROS.md</a>.</sub>
 </p>

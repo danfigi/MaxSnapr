@@ -39,22 +39,11 @@ jobs:
           $out
           if ($out -match '>\s') { throw 'Hay paquetes con vulnerabilidades conocidas' }
 
-      - name: Herramientas (ofuscador)
-        run: dotnet tool restore
-
-      - name: Ejecutable autónomo, ofuscado (incluye .NET)
+      - name: Ejecutable autónomo (incluye .NET)
         run: >
           dotnet publish src/MaxSnapr/MaxSnapr.csproj -c Release -r win-x64 --self-contained true
-          -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -p:Obfuscate=true
+          -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:DebugType=none
           -p:Version=${{ steps.v.outputs.version }} -o artifacts/publish
-
-      # The name map undoes the obfuscation: kept only as a private artifact of this repository, never in a Release.
-      - name: Mapa de nombres (privado)
-        uses: actions/upload-artifact@v7
-        with:
-          name: mapa-ofuscacion-${{ steps.v.outputs.version }}
-          path: src/MaxSnapr/obj/obfuscar-Release/out/Mapping.txt
-          retention-days: 90
 
       - name: Instalador
         shell: pwsh
@@ -114,19 +103,9 @@ jobs:
           ($body -split "`n" | ForEach-Object { $_ -replace '^          ', '' }) -join "`n" | Set-Content release-notes.md -Encoding utf8
           Get-Content release-notes.md
 
-      - name: Crear la Release (privada)
+      - name: Crear la Release
         if: github.ref_type == 'tag'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME out/* --title "MaxSnapr ${{ steps.v.outputs.version }}" --notes-file release-notes.md
-
-      # The public page users download from and the app checks for updates. Its token can only write releases there.
-      - name: Publicar en la página de descargas
-        if: github.ref_type == 'tag'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.DESCARGAS_TOKEN }}
-        run: |
-          if (-not $env:GH_TOKEN) { throw 'Falta el secreto DESCARGAS_TOKEN: la versión no se ha publicado en la página de descargas.' }
-          gh release create $env:GITHUB_REF_NAME out/* --repo danfigi/MaxSnapr-public --title "MaxSnapr ${{ steps.v.outputs.version }}" --notes-file release-notes.md --latest
+        run: gh release create $env:GITHUB_REF_NAME out/* --title "MaxSnapr ${{ steps.v.outputs.version }}" --notes-file release-notes.md --latest

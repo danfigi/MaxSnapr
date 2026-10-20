@@ -2,18 +2,19 @@
 
 Copyright (c) 2026 danfigi. Todos los derechos reservados.
 
-MaxSnapr es software gratuito, pero no es software libre: su autor conserva todos los derechos sobre el programa, su código, su nombre y su logotipo. Al instalar o usar MaxSnapr aceptas estas condiciones.
+MaxSnapr es software gratuito, pero no es software libre: su autor conserva todos los derechos sobre el programa, su código, su nombre y su logotipo. Su código fuente se puede consultar públicamente, pero que sea visible no concede ningún derecho sobre él más allá de los que recoge esta licencia. Al instalar o usar MaxSnapr, o al acceder a su código, aceptas estas condiciones.
 
 1. LO QUE PUEDES HACER
    - Usar MaxSnapr gratis, en el ámbito personal y en el profesional, en todos los equipos que quieras.
    - Usar libremente las capturas, imágenes y vídeos que hagas con él: son tuyos.
    - Recomendarlo y compartir el enlace a su página oficial de descarga.
+   - Leer y estudiar su código fuente para entender cómo funciona, y comunicar al autor errores o propuestas de mejora.
 
 2. LO QUE NO PUEDES HACER
    - Vender, alquilar o sublicenciar MaxSnapr, ni cobrar por él de ninguna forma.
    - Distribuir copias del programa fuera de su página oficial, ni publicarlo en otras webs o tiendas, sin permiso escrito del autor.
    - Modificar el programa o distribuir versiones modificadas.
-   - Descompilar, desensamblar o aplicar ingeniería inversa al programa, salvo en la medida en que la ley aplicable lo permita expresamente pese a esta prohibición.
+   - Copiar, reutilizar o redistribuir su código fuente, total o parcialmente, en otros programas o proyectos, sin permiso escrito del autor. Hacer un «fork» en GitHub o descargar el código no concede ningún derecho para usarlo, modificarlo ni redistribuirlo.
    - Eliminar o alterar los avisos de autoría, el nombre o el logotipo.
 
 3. COMPONENTES DE TERCEROS

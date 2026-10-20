@@ -25,7 +25,5 @@ jobs:
           $out = dotnet list src/MaxSnapr/MaxSnapr.csproj package --vulnerable --include-transitive
           $out
           if ($out -match '>\s') { throw 'Hay paquetes con vulnerabilidades conocidas' }
-      - name: Herramientas (ofuscador)
-        run: dotnet tool restore
-      - name: Compilar (Release, ofuscado)
-        run: dotnet build src/MaxSnapr/MaxSnapr.csproj -c Release --no-restore -p:Obfuscate=true
+      - name: Compilar (Release)
+        run: dotnet build src/MaxSnapr/MaxSnapr.csproj -c Release --no-restore

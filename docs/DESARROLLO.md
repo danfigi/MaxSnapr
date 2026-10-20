@@ -26,32 +26,15 @@ El instalador se genera con [Inno Setup 6](https://jrsoftware.org/isinfo.php) a 
 iscc /DAppVersion=1.0.0 installer/MaxSnapr.iss
 ```
 
-## Ofuscación
-
-Las versiones publicadas se compilan con `-p:Obfuscate=true`, que pasa [Obfuscar](https://github.com/obfuscar/obfuscar) (MIT, fijado en `.config/dotnet-tools.json`; `dotnet tool restore` lo instala) sobre el ensamblado antes de empaquetarlo. La configuración está en `src/MaxSnapr/obfuscar.xml`. Renombra los tipos, métodos y campos privados e internos, y deja intacto lo que se busca por nombre:
-- la API pública, que usan XAML y los enlaces de datos;
-- las propiedades, porque los ajustes, la biblioteca y los `.snapr` son JSON con sus nombres;
-- los nombres referenciados desde el XAML compilado.
-
-Las llamadas a Windows se renombran, pero conservan su punto de entrada.
-
-Antes de publicar, compruebe el ejecutable ofuscado con la autoprueba y que guarda los datos igual que la versión normal:
-
-```bash
-dotnet publish src/MaxSnapr/MaxSnapr.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:Obfuscate=true -o artifacts/obf
-tools/selftest.sh normal && tools/selftest.sh obf artifacts/obf/MaxSnapr.exe
-python tools/compare_saved_data.py "%TEMP%\maxsnapr-tests\normal\home" "%TEMP%\maxsnapr-tests\obf\home"
-```
-
-El mapa de nombres (`obj/obfuscar-Release/out/Mapping.txt`) permite interpretar un error del ejecutable ofuscado. Está excluido de Git y en GitHub solo se guarda como artefacto privado de cada versión: no lo publique nunca.
-
 ## Aviso de actualizaciones
 
-Al arrancar (como mucho una vez al día) la app consulta, de forma anónima, la última Release de [danfigi/MaxSnapr-public](https://github.com/danfigi/MaxSnapr-public), el repositorio público solo de descargas. Si es más nueva, muestra sus novedades y puede descargar e instalar el instalador. Solo lo acepta desde esa página por HTTPS y si su SHA-256 coincide con `SHA256SUMS.txt`. Se desactiva en *Preferencias* y también está en *Ayuda › Buscar actualizaciones* (`Services/Updates.cs`, `Views/UpdateWindow.cs`).
+Al arrancar (como mucho una vez al día) la app consulta, de forma anónima, la última Release de este repositorio. Si es más nueva, muestra sus novedades y puede descargar e instalar el instalador. Solo lo acepta desde las Releases de `danfigi/MaxSnapr` (o de las antiguas páginas de descargas, para las copias que aún las usen), por HTTPS y si su SHA-256 coincide con `SHA256SUMS.txt`. Se desactiva en *Preferencias* y también está en *Ayuda › Buscar actualizaciones* (`Services/Updates.cs`, `Views/UpdateWindow.cs`).
 
 El texto de cada versión sale de su apartado `## X.Y.Z` en [NOVEDADES.md](../NOVEDADES.md): escríbalo antes de crear la etiqueta.
 
-El flujo de publicación sube la versión al repositorio privado y a la página pública. Para la pública usa el secreto `DESCARGAS_TOKEN`: un token *fine-grained* limitado a `danfigi/MaxSnapr-public` con permiso **Contents: Read and write**. Si falta o caduca, el flujo falla con un aviso y la página pública no se actualiza.
+## Donaciones
+
+El botón «Apoyar MaxSnapr» (*Ayuda* y la bandeja, con un único aviso a las 50 capturas) y el README enlazan a https://buymeacoffee.com/danfigi. La dirección está en `Support.Url` (`Views/SupportWindow.cs`); con la cadena vacía, todo se oculta.
 
 ## Publicar una versión
 
@@ -61,7 +44,7 @@ Actualice `<Version>` en `src/MaxSnapr/MaxSnapr.csproj`, añada el apartado de l
 git tag -a v1.0.3 -m "MaxSnapr 1.0.3" && git push origin v1.0.3
 ```
 
-El flujo [Publicar versión](../.github/workflows/release.yml) comprueba las dependencias, compila el ejecutable portátil y el instalador, calcula sus sumas SHA-256 y crea la Release. Lanzado a mano desde Actions, solo deja los archivos como artefactos para probarlos.
+El flujo [Publicar versión](../.github/workflows/release.yml) comprueba las dependencias, compila el ejecutable portátil y el instalador, calcula sus sumas SHA-256 y crea la Release pública con las novedades. Lanzado a mano desde Actions, solo deja los archivos como artefactos para probarlos.
 
 ## Pruebas
 

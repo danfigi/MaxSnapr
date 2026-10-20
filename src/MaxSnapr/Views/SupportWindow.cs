@@ -13,7 +13,7 @@ namespace MaxSnapr.Views;
 public static class Support
 {
     /// <summary>Donation page (Buy Me a Coffee, Ko-fi, GitHub Sponsors…).</summary>
-    public const string Url = "";
+    public const string Url = "https://buymeacoffee.com/danfigi";
 
     /// <summary>The single reminder appears once the library reaches this many items.</summary>
     public const int ReminderAfter = 50;
