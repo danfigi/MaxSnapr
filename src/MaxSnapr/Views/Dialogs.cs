@@ -44,7 +44,8 @@ public class DialogWindow : Window
 
     protected TextBlock Caption(string text)
     {
-        var t = new TextBlock { Text = text, Style = (Style)Application.Current.FindResource("Caption") };
+        // Wrap: long help texts would otherwise run off the right edge of the dialog.
+        var t = new TextBlock { Text = text, Style = (Style)Application.Current.FindResource("Caption"), TextWrapping = TextWrapping.Wrap };
         Body.Children.Add(t);
         return t;
     }

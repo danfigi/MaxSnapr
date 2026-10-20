@@ -662,6 +662,23 @@ public static partial class SelfTest
         Check("Nombres con fecha y hora", newName && fileName && migrated, $"{item.Name} · {Path.GetFileName(item.FileName)} · antiguo → {old.Name}");
     }
 
+    /// <summary>The QR must point at a physical network the phone can reach, never at a virtual or link-local adapter.</summary>
+    static void MobileAddressCheck(string outDir)
+    {
+        var all = MobileReceiveWindow.LanCandidates().ToList();
+        var chosen = MobileReceiveWindow.LanAddress();
+        var bad = new[] { "vethernet", "hyper-v", "wsl", "virtual", "vmware", "docker", "vpn", "bluetooth" };
+        bool ok = chosen == null || (!chosen.StartsWith("169.254.") && !all.Any(c => c.Address == chosen && bad.Any(b => c.Adapter.ToLowerInvariant().Contains(b))));
+        Check("Recibir desde el móvil: dirección de la red real", ok,
+            chosen == null ? "sin red local" : $"{chosen} ({all.FirstOrDefault(c => c.Address == chosen).Adapter})");
+        var w = new MobileReceiveWindow("127.0.0.1");
+        w.Show();
+        foreach (var e in LogicalTreeHelper.GetChildren((DependencyObject)((System.Windows.Controls.DockPanel)w.Content).Children[1]).OfType<System.Windows.Controls.Expander>()) e.IsExpanded = true;
+        w.UpdateLayout();
+        Shot(w, outDir, "15-mobile-receive.png");
+        w.Close();
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -703,5 +720,6 @@ public static partial class SelfTest
         await EdgeWidgetResilienceCheck();
         SupportReminderCheck();
         NamingCheck();
+        MobileAddressCheck(outDir);
     }
 }

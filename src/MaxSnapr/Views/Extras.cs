@@ -126,6 +126,8 @@ public sealed class MobileReceiveWindow : DialogWindow
     readonly string _token = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
     readonly SemaphoreSlim _slots = new(4);
     readonly System.Windows.Threading.DispatcherTimer _idle = new() { Interval = TimeSpan.FromSeconds(30) };
+    readonly System.Windows.Threading.DispatcherTimer _hint = new() { Interval = TimeSpan.FromSeconds(25) };
+    volatile bool _connectedOnce;
     DateTime _lastActivity = DateTime.UtcNow;
     const long MaxUpload = 512L * 1024 * 1024;
     static readonly HashSet<string> Allowed = new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".heic", ".heif", ".tif", ".tiff", ".mp4" };
@@ -152,10 +154,19 @@ public sealed class MobileReceiveWindow : DialogWindow
             int port = ((IPEndPoint)_listener.LocalEndpoint).Port;
             var url = $"http://{ip}:{port}/?k={_token}";
             Caption("Escanee el código con la cámara del móvil (misma red Wi-Fi) y elija las fotos. Windows puede pedir permiso en el firewall la primera vez.");
+            var adapter = LanCandidates().FirstOrDefault(c => c.Address == ip).Adapter;
+            if (adapter != null) Caption($"Red: {adapter} ({ip})");
             Body.Children.Add(new Image { Source = Qr(url), Width = 220, Height = 220, Margin = new Thickness(0, 10, 0, 10) });
             _url.Text = url;
             Url = url;
             Body.Children.Add(_url);
+            var help = new Expander { Header = "¿El móvil se queda cargando?", Margin = new Thickness(0, 8, 0, 4),
+                Content = new TextBlock { Text = Troubleshooting(ip), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) } };
+            _connectedOnce = false;
+            // If no phone has reached us after a while, open the help by itself.
+            _hint.Tick += (_, _) => { _hint.Stop(); if (!_connectedOnce) help.IsExpanded = true; };
+            _hint.Start();
+            Body.Children.Add(help);
             Caption("Recibidas");
             Body.Children.Add(_received);
             _ = AcceptLoop();
@@ -165,7 +176,7 @@ public sealed class MobileReceiveWindow : DialogWindow
         var close = new Button { Content = "Terminar", Style = (Style)Application.Current.FindResource("AccentButton"), MinWidth = 100, IsCancel = true };
         close.Click += (_, _) => Close();
         Buttons.Children.Add(close);
-        Closed += (_, _) => { _idle.Stop(); _cts.Cancel(); _listener?.Stop(); };
+        Closed += (_, _) => { _idle.Stop(); _hint.Stop(); _cts.Cancel(); _listener?.Stop(); };
     }
 
     static ImageSource Qr(string text)
@@ -178,11 +189,55 @@ public sealed class MobileReceiveWindow : DialogWindow
         return img;
     }
 
-    static string? LanAddress() => NetworkInterface.GetAllNetworkInterfaces()
-        .Where(n => n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType is not (NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel))
-        .SelectMany(n => n.GetIPProperties().UnicastAddresses)
-        .Select(a => a.Address)
-        .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a))?.ToString();
+    /// <summary>Lines of text for the "it does not connect" help, built from the current state of this computer.</summary>
+    internal static string Troubleshooting(string ip)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Dirección del QR: {ip} ({LanCandidates().FirstOrDefault(c => c.Address == ip).Adapter ?? "adaptador desconocido"})");
+        sb.AppendLine("Compruebe en el móvil que está en la misma Wi-Fi que este equipo (no en datos móviles ni en una red de invitados).");
+        sb.AppendLine("Si la red de Windows es «Pública», el firewall puede bloquear la conexión: elija «Privada» en Configuración › Red e Internet › Wi-Fi › propiedades de la red, si es su red de casa.");
+        sb.AppendLine("Algunos routers aíslan a los dispositivos entre sí («aislamiento de clientes» o «AP isolation»); desactívelo o use otra red.");
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Address of the network the phone is on: a physical Wi-Fi or Ethernet adapter with a default gateway.
+    /// Virtual switches (Hyper-V, WSL, Docker, VirtualBox, VMware), VPNs and link-local addresses only exist
+    /// inside this computer, so a phone can never reach them.
+    /// </summary>
+    internal static string? LanAddress() => LanCandidates().FirstOrDefault().Address;
+
+    internal static IEnumerable<(string Address, string Adapter)> LanCandidates() => NetworkInterface.GetAllNetworkInterfaces()
+        .Where(n => n.OperationalStatus == OperationalStatus.Up
+            && n.NetworkInterfaceType is NetworkInterfaceType.Wireless80211 or NetworkInterfaceType.Ethernet or NetworkInterfaceType.GigabitEthernet or NetworkInterfaceType.FastEthernetT
+            && !IsVirtual(n))
+        .Select(n => (n, p: n.GetIPProperties()))
+        .Select(x => (x.n, x.p, gateway: x.p.GatewayAddresses.Any(g => g.Address.AddressFamily == AddressFamily.InterNetwork && !g.Address.Equals(IPAddress.Any))))
+        .SelectMany(x => x.p.UnicastAddresses
+            .Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a.Address) && !IsLinkLocal(a.Address))
+            .Select(a => (a.Address, x.n, x.gateway)))
+        // Prefer the adapter with a gateway (the one used for the internet), then Wi-Fi, then private ranges.
+        .OrderByDescending(x => x.gateway)
+        .ThenByDescending(x => x.n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+        .ThenByDescending(x => IsPrivate(x.Address))
+        .Select(x => (x.Address.ToString(), x.n.Name));
+
+    static bool IsVirtual(NetworkInterface n)
+    {
+        var d = (n.Description + " " + n.Name).ToLowerInvariant();
+        return new[] { "hyper-v", "vethernet", "wsl", "virtual", "vmware", "virtualbox", "docker", "tap-", "tun", "vpn", "wireguard", "zerotier", "tailscale", "loopback", "bluetooth" }
+            .Any(d.Contains);
+    }
+
+    static bool IsLinkLocal(IPAddress a) => a.GetAddressBytes() is [169, 254, ..];
+
+    static bool IsPrivate(IPAddress a) => a.GetAddressBytes() switch
+    {
+        [10, ..] => true,
+        [192, 168, ..] => true,
+        [172, var b, ..] => b is >= 16 and <= 31,
+        _ => false,
+    };
 
     async Task AcceptLoop()
     {
@@ -191,6 +246,7 @@ public sealed class MobileReceiveWindow : DialogWindow
             TcpClient client;
             try { client = await _listener.AcceptTcpClientAsync(_cts.Token); }
             catch { break; }
+            _connectedOnce = true;
             _ = Task.Run(() => Handle(client));
         }
     }
