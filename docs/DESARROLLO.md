@@ -30,6 +30,10 @@ iscc /DAppVersion=1.0.0 installer/MaxSnapr.iss
 
 Al arrancar (como mucho una vez al día) la app consulta, de forma anónima, la última Release de este repositorio. Si es más nueva, muestra sus novedades y puede descargar e instalar el instalador. Solo lo acepta desde las Releases de `danfigi/MaxSnapr` (o de las antiguas páginas de descargas, para las copias que aún las usen), por HTTPS y si su SHA-256 coincide con `SHA256SUMS.txt`. Se desactiva en *Preferencias* y también está en *Ayuda › Buscar actualizaciones* (`Services/Updates.cs`, `Views/UpdateWindow.cs`).
 
+## Recuento de uso anónimo
+
+`Services/Usage.cs` cuenta en local cuántas veces se usa cada función (lista cerrada de claves en `Usage.Features`) y, como mucho una vez al día, envía a `server/usage` (un Worker de Cloudflare con D1) un JSON sin identificadores: versión, Windows, idioma, instalada o portable, si es su primer envío de la semana, del mes o de siempre, y los recuentos de un día ya terminado. El servidor suma esos datos en totales diarios; nunca lee ni guarda la IP, y desactiva los registros. Los usuarios semanales y mensuales salen de las marcas «primer envío de la semana/mes», sin necesidad de identificar a nadie. Las pruebas aisladas (`MAXSNAPR_HOME`) y `MAXSNAPR_NO_USAGE=1` no envían nada. El panel privado está en la raíz del Worker y necesita la clave `DASHBOARD_KEY`; ver `server/usage/LEEME.md`.
+
 El texto de cada versión sale de su apartado `## X.Y.Z` en [NOVEDADES.md](../NOVEDADES.md): escríbalo antes de crear la etiqueta.
 
 ## Donaciones

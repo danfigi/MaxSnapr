@@ -49,6 +49,7 @@ public sealed class StepCaptureSession
         if (_active != null) { _ = _active.StopAsync(); return; }
         _active = new StepCaptureSession();
         _active.Begin();
+        Usage.Count("capture.steps");
     }
 
     void Begin()

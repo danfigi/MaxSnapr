@@ -1,0 +1,19 @@
+name = "maxsnapr-usage"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+# No request logs: the counter never keeps IP addresses, not even in Cloudflare's own log view.
+logpush = false
+
+[observability]
+enabled = false
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "maxsnapr-usage"
+database_id = "2b2aef17-d85e-4108-804f-9814e1cca99f"

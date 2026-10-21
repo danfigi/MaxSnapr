@@ -50,6 +50,9 @@ public sealed class SettingsWindow : Window
     static TextBlock H(string t) => new() { Text = t, Style = Res<Style>("SectionHeader") };
     static TextBlock Note(string t) => new() { Text = t, Style = Res<Style>("Caption"), TextWrapping = TextWrapping.Wrap };
 
+    /// <summary>Plain description of the usage counter, shared with the welcome window.</summary>
+    public const string UsageExplanation = "Una vez al día se envía la versión de MaxSnapr y de Windows, el idioma, el país (deducido por el servidor, sin guardar la dirección IP) y cuántas veces se usó cada función. Nunca se envían capturas, textos, nombres de archivo ni nada que le identifique a usted o a su equipo.";
+
     static CheckBox Toggle(string label, bool value, Action<bool> f)
     {
         var c = new CheckBox { Content = label, IsChecked = value, Margin = new Thickness(0, 8, 0, 0) };
@@ -91,6 +94,8 @@ public sealed class SettingsWindow : Window
         p.Children.Add(H("Inicio"));
         p.Children.Add(Toggle("Iniciar MaxSnapr con Windows (en el área de notificación)", _s.RunAtStartup, v => { _s.RunAtStartup = v; StartupService.Apply(v); }));
         p.Children.Add(Toggle("Avisar cuando haya una versión nueva (consulta anónima, una vez al día)", _s.CheckForUpdates, v => { _s.CheckForUpdates = v; _s.SkippedVersion = null; }));
+        p.Children.Add(Toggle("Ayudar a mejorar MaxSnapr con un recuento de uso anónimo", _s.ShareUsage, v => { _s.ShareUsage = v; if (!v) Usage.ClearPending(); }));
+        p.Children.Add(Note(UsageExplanation));
         p.Children.Add(Toggle("Mostrar el widget de captura en el borde de la pantalla", _s.ShowEdgeWidget, v => { _s.ShowEdgeWidget = v; App.Current.UpdateEdgeWidget(); }));
         p.Children.Add(Toggle("Mostrar la bienvenida y los consejos al iniciar", _s.ShowWelcome, v => _s.ShowWelcome = v));
         p.Children.Add(Toggle("Guardar en la biblioteca las imágenes copiadas en otras aplicaciones", _s.WatchClipboard, v => { _s.WatchClipboard = v; App.Current.UpdateClipboardWatcher(); }));

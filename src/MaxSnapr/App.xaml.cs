@@ -77,6 +77,17 @@ public partial class App : Application
             });
             return;
         }
+        // Diagnostic: writes the exact usage report this copy would send, and sends it only with "--send".
+        if (e.Args.Length >= 2 && e.Args[0] == "--probe-usage")
+        {
+            Settings = AppSettings.Load();
+            Dispatcher.BeginInvoke(async () =>
+            {
+                System.IO.File.WriteAllText(e.Args[1], await Usage.ProbeAsync(e.Args.Contains("--send")));
+                Shutdown(0);
+            });
+            return;
+        }
         if (e.Args.Length >= 2 && e.Args[0] == "--probe-devices")
         {
             Dispatcher.BeginInvoke(async () =>
@@ -125,6 +136,7 @@ public partial class App : Application
         UpdateEdgeWidget();
         UpdateClipboardWatcher();
         Updates.ScheduleStartupCheck();
+        Usage.ScheduleStartupReport();
         bool trayOnly = e.Args.Contains("--tray");
         // Reopened by the installer after updating itself from Help › Check for updates.
         bool updated = e.Args.Contains("--updated");
@@ -286,6 +298,7 @@ public partial class App : Application
         _quitting = true;
         Editor?.SaveCurrent();
         Settings.Save();
+        Usage.Save();
         LibraryStore.Instance.Save();
         _hotkeys?.Dispose();
         if (_tray != null) { _tray.Visible = false; _tray.Dispose(); }

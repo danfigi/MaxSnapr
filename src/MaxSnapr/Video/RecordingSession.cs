@@ -147,6 +147,10 @@ public sealed class RecordingSession
             }
             if (_s.Countdown) await CountdownAsync();
             await BeginRecorderAsync();
+            Usage.Count("video");
+            if (_s.Microphone) Usage.Count("video.mic");
+            if (_s.SystemAudio) Usage.Count("video.system_audio");
+            if (CameraOn) { Usage.Count("video.webcam"); if (_s.WebcamBackground != CameraBackgrounds.None) Usage.Count("video.background"); }
             _keys = new HotkeyService();
             // Other recorders often own Shift+F9/F10, so fall back to Ctrl+Shift.
             _pauseKey = RegisterFirst(TogglePause, new Hotkey { Shift = true, Key = (int)Key.F9 }, new Hotkey { Ctrl = true, Shift = true, Key = (int)Key.F9 });
@@ -393,6 +397,7 @@ public sealed class RecordingSession
         LibraryItem item;
         if (_s.SaveAsGif)
         {
+            Usage.Count("video.gif");
             var profile = GifProfile.All[Math.Clamp(_s.GifProfile, 0, GifProfile.All.Length - 1)];
             var gif = Path.ChangeExtension(_path, ".gif");
             await VideoTools.ToGifAsync(_path, TimeSpan.Zero, TimeSpan.Zero, profile.Fps, profile.MaxWidth, gif);

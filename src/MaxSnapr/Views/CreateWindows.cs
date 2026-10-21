@@ -142,6 +142,7 @@ public sealed class CombineWindow : Window
         var imgs = _pick.Chosen.Select(EditorWindow.RenderItem).ToList();
         if (imgs.Count == 0) { MessageBox.Show(this, "Añada al menos una imagen.", "Crear"); return; }
         var doc = TemplateBuilder.Build(def, imgs, _title.Text, Theme);
+        Usage.Count("template");
         var item = LibraryStore.Instance.Add(doc, string.IsNullOrWhiteSpace(_title.Text) ? def.Name : _title.Text, "Plantilla");
         App.Current.ShowEditor().OpenDocument(doc, item);
         Close();

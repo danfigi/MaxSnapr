@@ -72,6 +72,6 @@ Widget en el borde (siempre visible: un vigilante lo devuelve a su sitio si Wind
 - **Recuperación de vídeos tras un cierre inesperado:** el MP4 solo es válido cuando el codificador lo finaliza.
 - **Documentos de varias páginas** dentro del editor: se cubre con plantillas, la bandeja y el PDF de varias páginas.
 - **Impresora virtual de captura y extensión de miniaturas del Explorador:** requieren controladores o código nativo instalado como administrador.
-- **Actualizador automático, telemetría y funciones experimentales:** no hay servidor de publicación, y por diseño no se envían datos.
+- **Funciones experimentales.** (El aviso de versiones y un recuento de uso anónimo y desactivable sí están; no se envía ningún dato personal.)
 - **Captura HDR e idioma de la interfaz distinto del español.**
 - **Formatos propietarios de otros capturadores:** MaxSnapr usa su propio `.snapr` abierto (ZIP + JSON + PNG).

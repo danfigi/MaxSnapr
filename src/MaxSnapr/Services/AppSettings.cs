@@ -92,6 +92,8 @@ public sealed class AppSettings
     public bool ShowWelcome { get; set; } = true;
     public bool SupportReminderShown { get; set; }
     public bool CheckForUpdates { get; set; } = true;
+    /// <summary>Anonymous daily usage counts (Services/Usage.cs); on by default and explained in the welcome window.</summary>
+    public bool ShareUsage { get; set; } = true;
     public DateTime LastUpdateCheck { get; set; }
     public string? SkippedVersion { get; set; }
     public bool SpellCheck { get; set; } = true;

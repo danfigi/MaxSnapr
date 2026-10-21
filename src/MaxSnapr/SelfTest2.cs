@@ -881,5 +881,41 @@ public static partial class SelfTest
         UpdateChecks(outDir);
         DockLayoutCheck();
         ScreenLayoutsCheck();
+        UsageReportCheck();
+    }
+
+    /// <summary>The usage report carries only the allowed fields, finished days, known features and capped counts.</summary>
+    static void UsageReportCheck()
+    {
+        var today = new DateTime(2026, 10, 21);
+        var s = new UsageState
+        {
+            Day = "2026-10-20",
+            Counts = new() { ["capture"] = 4, ["editor.arrow"] = 5000, [@"C:\Users\secreto.png"] = 1 },
+            Pending = new() { ["2026-10-18"] = new() { ["video"] = 2 } },
+            LastWeek = Usage.WeekOf(today), LastMonth = "2026-10", Reported = true,
+        };
+        using var doc = System.Text.Json.JsonDocument.Parse(Usage.BuildReport(s, today, new Version(10, 0, 26100), new System.Globalization.CultureInfo("es-ES"), portable: false));
+        var r = doc.RootElement;
+        var keys = r.EnumerateObject().Select(p => p.Name).OrderBy(k => k).ToList();
+        bool fields = keys.SequenceEqual(new[] { "f", "fd", "first", "install", "lang", "nm", "nw", "os", "v" });
+        bool oldestFirst = r.GetProperty("fd").GetString() == "2026-10-18" && r.GetProperty("f").GetProperty("video").GetInt32() == 2;
+        bool flags = r.GetProperty("os").GetString() == "11 26100" && r.GetProperty("lang").GetString() == "es" && !r.GetProperty("first").GetBoolean()
+            && !r.GetProperty("nw").GetBoolean() && !r.GetProperty("nm").GetBoolean();
+
+        // The next day's report carries yesterday, with the unknown key dropped and the runaway count capped.
+        s.Pending.Clear();
+        using var doc2 = System.Text.Json.JsonDocument.Parse(Usage.BuildReport(s, today.AddDays(7), new Version(10, 0, 19045), new System.Globalization.CultureInfo("en-US"), portable: true));
+        var r2 = doc2.RootElement;
+        var f2 = r2.GetProperty("f");
+        bool carried = r2.GetProperty("fd").GetString() == "2026-10-20" && f2.GetProperty("capture").GetInt32() == 4
+            && f2.GetProperty("editor.arrow").GetInt32() == 1000 && f2.EnumerateObject().Count() == 2;
+        bool next = r2.GetProperty("nw").GetBoolean() && r2.GetProperty("os").GetString() == "10 19045" && r2.GetProperty("install").GetString() == "portable";
+        bool noLeak = !doc2.RootElement.GetRawText().Contains("secreto") && !doc2.RootElement.GetRawText().Contains(Environment.UserName, StringComparison.OrdinalIgnoreCase)
+            && !doc2.RootElement.GetRawText().Contains(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
+        Check("Recuento de uso anónimo: solo campos permitidos", fields && oldestFirst && flags && carried && next && noLeak,
+            $"campos {fields}, orden {oldestFirst}, datos {flags}, día siguiente {carried}/{next}, sin datos personales {noLeak}");
+        // Isolated runs must never send anything.
+        Check("Las pruebas aisladas no envían el recuento", AppSettings.Home != null);
     }
 }

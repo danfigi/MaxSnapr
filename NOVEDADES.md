@@ -2,6 +2,10 @@
 
 Cada versión tiene su apartado `## X.Y.Z`. Al publicar, ese texto aparece en la página de descargas y en la ventana «Hay una versión nueva» de la aplicación.
 
+## 1.2.4
+
+- **Recuento de uso anónimo**: para saber cuánta gente usa MaxSnapr y qué funciones mejorar, una vez al día se envía un recuento sin ningún dato personal: la versión, el Windows, el idioma, el país y cuántas veces se usó cada función. Nunca se envían capturas, textos ni nombres de archivo. Se puede desactivar en *Preferencias*.
+
 ## 1.2.3
 
 - **Actualizar es ahora directo**: tras pulsar *Descargar e instalar*, MaxSnapr se cierra, se actualiza y se vuelve a abrir solo, con un aviso de que ya tienes la versión nueva. Antes se quedaba cerrado al terminar.

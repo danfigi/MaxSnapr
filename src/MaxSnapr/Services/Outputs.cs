@@ -218,6 +218,7 @@ public static class Outputs
         {
             var result = await d.ShareAsync(item, owner);
             if (result == null) return;
+            Usage.Count("share");
             var h = MaxSnapr.App.Settings.Output.History;
             h.Insert(0, new ShareRecord { Destination = d.Name, Item = item.Name, Target = result });
             if (h.Count > 50) h.RemoveRange(50, h.Count - 50);

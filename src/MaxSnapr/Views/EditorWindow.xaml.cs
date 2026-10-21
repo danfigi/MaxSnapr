@@ -298,6 +298,7 @@ public partial class EditorWindow : Window
 
     public void OpenDocument(EditorDocument doc, LibraryItem? item)
     {
+        Usage.Count("editor.open");
         SaveCurrent();
         HideVideo();
         _doc = doc;
@@ -445,6 +446,7 @@ public partial class EditorWindow : Window
 
     public void ShowLibrary()
     {
+        Usage.Count("library.open");
         SaveCurrent();
         LibraryPane.Visibility = Visibility.Visible;
         LibraryToggle.IsChecked = true;
@@ -624,6 +626,7 @@ public partial class EditorWindow : Window
             }
             else ExportService.Save(_doc.Flatten(), dlg.FileName, App.Settings.JpegQuality);
             App.Settings.LastSaveFolder = Path.GetDirectoryName(dlg.FileName);
+            Usage.Count("export");
             App.Settings.DefaultExport = formats[Math.Clamp(dlg.FilterIndex - 1, 0, formats.Length - 1)];
             StatusText.Text = "Exportado: " + dlg.FileName;
         }
@@ -644,6 +647,7 @@ public partial class EditorWindow : Window
         var dlg = new SaveFileDialog { Filter = "PDF (*.pdf)|*.pdf", FileName = SafeName(_item?.Name ?? "Captura") };
         if (dlg.ShowDialog(this) != true) return;
         ExportService.SavePdf(new[] { _doc.Flatten() }, dlg.FileName, App.Settings.JpegQuality);
+        Usage.Count("export");
         StatusText.Text = "PDF exportado";
     }
 
@@ -1177,6 +1181,7 @@ public partial class EditorWindow : Window
         try
         {
             StatusText.Text = "Buscando datos sensibles…";
+            Usage.Count("smart_redact");
             int n = await Editor.Smart.SmartFeatures.SmartRedactAsync(_doc, dlg.Categories, dlg.Kind, dlg.CustomWords);
             StatusText.Text = n == 0 ? "No se encontraron datos que ocultar" : $"{n} zona(s) ocultadas; puede moverlas o borrarlas como cualquier objeto";
         }

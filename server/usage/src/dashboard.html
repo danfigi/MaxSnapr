@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>MaxSnapr · Uso</title>
+<style>
+.viz-root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface-1: #fcfcfb; --border: rgba(11,11,11,0.10);
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --other: #b5b3ab;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6;
+  --wash: rgba(11,11,11,0.05);
+}
+@media (prefers-color-scheme: dark) {
+  .viz-root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface-1: #1a1a19; --border: rgba(255,255,255,0.10);
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --other: #5c5b57;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9;
+    --wash: rgba(255,255,255,0.06);
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.viz-root { min-height: 100vh; background: var(--page); color: var(--text-primary); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 28px clamp(16px, 4vw, 48px) 48px; }
+header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; }
+.sub { color: var(--text-secondary); }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 20px; }
+.filters button { font: inherit; color: var(--text-primary); background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.filters button:hover { background: var(--wash); }
+.filters button[aria-pressed="true"] { border-color: var(--text-primary); font-weight: 600; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile, .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; }
+.tile { padding: 14px 16px; }
+.tile .label { color: var(--text-secondary); font-size: 13px; }
+.tile .value { font-size: 30px; font-weight: 600; margin-top: 2px; }
+.tile .note { color: var(--muted); font-size: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.card { padding: 16px 18px 12px; min-width: 0; }
+.card.wide { grid-column: 1 / -1; }
+.card h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.card .desc { color: var(--text-secondary); font-size: 13px; margin: 2px 0 10px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 6px; color: var(--text-secondary); font-size: 12px; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: -1px; }
+.bars { display: grid; grid-template-columns: minmax(90px, 38%) 1fr auto; gap: 6px 10px; align-items: center; font-size: 13px; }
+.bars .name { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bars .track { height: 14px; position: relative; }
+.bars .fill { position: absolute; inset: 0 auto 0 0; background: var(--s1); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bars .row:hover .fill, .bars .fill:hover { filter: brightness(1.12); }
+.bars .num { color: var(--text-secondary); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+details { margin-top: 8px; color: var(--text-secondary); font-size: 12px; }
+summary { cursor: pointer; width: max-content; }
+table { border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 3px 14px 3px 0; border-bottom: 1px solid var(--grid); }
+td.n, th.n { text-align: right; }
+#tip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); font-size: 12px; display: none; min-width: 120px; }
+#tip .t { color: var(--text-secondary); margin-bottom: 4px; }
+#tip .r { display: flex; align-items: center; gap: 8px; }
+#tip .r i { width: 12px; height: 2px; background: var(--c); }
+#tip .r b { font-weight: 600; color: var(--text-primary); min-width: 34px; }
+#tip .r span { color: var(--text-secondary); }
+.loading .grid, .loading .tiles { opacity: 0.55; transition: opacity .15s; }
+footer { color: var(--muted); font-size: 12px; margin-top: 22px; }
+</style>
+</head>
+<body>
+<div class="viz-root" id="root">
+  <header>
+    <h1>MaxSnapr · Uso</h1>
+    <span class="sub" id="sub">Cargando…</span>
+  </header>
+  <div class="filters" role="group" aria-label="Periodo">
+    <button data-days="7">7 días</button>
+    <button data-days="30" aria-pressed="true">30 días</button>
+    <button data-days="90">90 días</button>
+    <button data-days="365">1 año</button>
+  </div>
+  <section class="tiles" id="tiles"></section>
+  <section class="grid">
+    <div class="card wide"><h2>Usuarios activos por día</h2><p class="desc">Copias de MaxSnapr abiertas cada día.</p><div id="c-daily"></div></div>
+    <div class="card"><h2>Usuarios activos por semana</h2><p class="desc">Copias distintas abiertas cada semana (lunes a domingo).</p><div id="c-weekly"></div></div>
+    <div class="card"><h2>Instalaciones nuevas por semana</h2><p class="desc">Copias que se abren por primera vez.</p><div id="c-new"></div></div>
+    <div class="card wide"><h2>Versiones en uso</h2><p class="desc">Reparto de los usuarios de cada día por versión.</p><div id="c-versions"></div></div>
+    <div class="card wide"><h2>Funciones</h2><p class="desc">En qué parte de los días de uso se usó cada función, y cuántas veces en total.</p><div id="c-features"></div></div>
+    <div class="card"><h2>Windows</h2><p class="desc">Usuarios-día por versión de Windows.</p><div id="c-os"></div></div>
+    <div class="card"><h2>Países</h2><p class="desc">Usuarios-día por país.</p><div id="c-countries"></div></div>
+    <div class="card"><h2>Idioma de Windows</h2><p class="desc">Usuarios-día por idioma.</p><div id="c-langs"></div></div>
+    <div class="card"><h2>Tipo de instalación</h2><p class="desc">Instalador o versión portable.</p><div id="c-installs"></div></div>
+  </section>
+  <footer>Datos anónimos: no hay identificadores de usuario ni direcciones IP. Las fechas son en UTC. Las funciones de un día se cuentan cuando la copia se vuelve a abrir.</footer>
+</div>
+<div id="tip" role="tooltip"></div>
+<script>
+"use strict";
+const SERIES = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"];
+const FEATURE_NAMES = {
+  "capture": "Capturas de imagen", "capture.region": "Captura de región", "capture.window": "Captura de ventana",
+  "capture.fullscreen": "Pantalla completa", "capture.scrolling": "Captura con desplazamiento", "capture.panoramic": "Captura panorámica",
+  "capture.repeat": "Repetir la última captura", "capture.steps": "Captura de pasos", "ocr": "Extraer texto (OCR)",
+  "video": "Grabaciones de vídeo", "video.mic": "Vídeo con micrófono", "video.system_audio": "Vídeo con audio del sistema",
+  "video.webcam": "Vídeo con cámara", "video.background": "Fondo virtual o desenfoque", "video.gif": "Guardar como GIF",
+  "editor.open": "Abrir el editor", "editor.arrow": "Flechas y líneas", "editor.text": "Texto", "editor.callout": "Globos",
+  "editor.shape": "Formas", "editor.step": "Pasos numerados", "editor.pen": "Lápiz y marcador", "editor.blur": "Difuminar",
+  "editor.magnify": "Lupa", "editor.spotlight": "Foco", "editor.stamp": "Sellos", "editor.crop": "Recortar",
+  "smart_redact": "Ocultación inteligente", "export": "Guardar o exportar", "share": "Compartir", "mobile_receive": "Recibir desde el móvil",
+  "template": "Plantillas", "library.open": "Biblioteca",
+};
+const LANGS = { es: "Español", en: "Inglés", ca: "Catalán", eu: "Euskera", gl: "Gallego", pt: "Portugués", fr: "Francés", de: "Alemán", it: "Italiano" };
+const INSTALLS = { setup: "Instalador", portable: "Portable" };
+let regionNames = null;
+try { regionNames = new Intl.DisplayNames(["es"], { type: "region" }); } catch (e) {}
+const country = (c) => c === "XX" ? "Desconocido" : (regionNames ? regionNames.of(c) || c : c);
+
+const css = (v) => getComputedStyle(document.getElementById("root")).getPropertyValue(v).trim();
+const fmt = new Intl.NumberFormat("es-ES");
+const pct = (x) => (x * 100 >= 10 || x === 0 ? Math.round(x * 100) : (x * 100).toFixed(1).replace(".", ",")) + " %";
+const el = (tag, attrs, text) => { const e = document.createElement(tag); for (const k in attrs || {}) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
+const svgEl = (tag, attrs) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+const dayLabel = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "UTC" });
+
+// ---------------------------------------------------------------------------------------------- tooltip
+const tip = document.getElementById("tip");
+function showTip(evt, title, rows) {
+  tip.replaceChildren(el("div", { class: "t" }, title));
+  for (const r of rows) {
+    const row = el("div", { class: "r" });
+    const key = el("i"); key.style.setProperty("--c", r.color); row.append(key, el("b", {}, r.value), el("span", {}, r.label));
+    tip.append(row);
+  }
+  tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = evt.clientX + 14, y = evt.clientY + 14;
+  if (x + w > innerWidth - 8) x = evt.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = evt.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+
+// ---------------------------------------------------------------------------------------------- helpers
+function niceMax(v) {
+  if (v <= 4) return 4;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+function allDays(since, days) {
+  const out = [], t0 = Date.parse(since + "T00:00:00Z");
+  for (let i = 0; i < days; i++) out.push(new Date(t0 + i * 86400000).toISOString().slice(0, 10));
+  return out;
+}
+function weekStart(d) {
+  const t = new Date(d + "T00:00:00Z"), wd = (t.getUTCDay() + 6) % 7;
+  return new Date(t - wd * 86400000).toISOString().slice(0, 10);
+}
+function table(container, head, rows) {
+  const det = el("details"); det.append(el("summary", {}, "Ver como tabla"));
+  const t = el("table"), tr = el("tr");
+  head.forEach((h, i) => tr.append(el("th", i ? { class: "n" } : {}, h)));
+  t.append(tr);
+  for (const r of rows) { const row = el("tr"); r.forEach((c, i) => row.append(el("td", i ? { class: "n" } : {}, c))); t.append(row); }
+  det.append(t); container.append(det);
+}
+function axisY(g, W, H, M, max) {
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, y = M.t + H - H * i / 4;
+    g.append(svgEl("line", { x1: M.l, x2: M.l + W, y1: y, y2: y, stroke: i ? css("--grid") : css("--axis"), "stroke-width": 1 }));
+    const t = svgEl("text", { x: M.l - 8, y: y + 4, "text-anchor": "end" }); t.textContent = fmt.format(Math.round(v * 10) / 10); g.append(t);
+  }
+}
+function axisX(g, labels, xAt, y) {
+  const n = labels.length, step = Math.max(1, Math.ceil(n / 7));
+  for (let i = 0; i < n; i += step) {
+    const t = svgEl("text", { x: xAt(i), y, "text-anchor": "middle" }); t.textContent = labels[i]; g.append(t);
+  }
+}
+
+// ---------------------------------------------------------------------------------------------- line (one series)
+function lineChart(container, labels, values, name) {
+  container.replaceChildren();
+  if (!values.some((v) => v > 0)) { container.append(el("div", { class: "empty" }, "Todavía no hay datos en este periodo.")); return; }
+  const width = Math.max(320, container.clientWidth), height = 230, M = { l: 40, r: 12, t: 10, b: 24 };
+  const W = width - M.l - M.r, H = height - M.t - M.b, max = niceMax(Math.max(...values));
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": name });
+  axisY(svg, W, H, M, max);
+  const x = (i) => M.l + (labels.length === 1 ? W / 2 : W * i / (labels.length - 1)), y = (v) => M.t + H - H * v / max;
+  axisX(svg, labels.map(dayLabel), x, height - 6);
+  const color = css("--s1");
+  svg.append(svgEl("path", { d: values.map((v, i) => (i ? "L" : "M") + x(i) + " " + y(v)).join(""), fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  const cross = svgEl("line", { y1: M.t, y2: M.t + H, stroke: css("--axis"), "stroke-width": 1, visibility: "hidden" });
+  const dot = svgEl("circle", { r: 4, fill: color, stroke: css("--surface-1"), "stroke-width": 2, visibility: "hidden" });
+  svg.append(cross, dot);
+  const hit = svgEl("rect", { x: M.l, y: M.t, width: W, height: H, fill: "transparent", tabindex: 0 });
+  const at = (evt) => {
+    const r = svg.getBoundingClientRect(), px = (evt.clientX - r.left) * width / r.width;
+    const i = Math.max(0, Math.min(labels.length - 1, Math.round((px - M.l) / W * (labels.length - 1))));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(values[i])); dot.setAttribute("visibility", "visible");
+    showTip(evt, dayLabel(labels[i]), [{ color, value: fmt.format(values[i]), label: name }]);
+  };
+  hit.addEventListener("pointermove", at);
+  hit.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); });
+  svg.append(hit);
+  container.append(svg);
+  table(container, ["Día", name], labels.map((d, i) => [d, fmt.format(values[i])]));
+}
+
+// ---------------------------------------------------------------------------------------------- vertical bars (one series)
+function barChart(container, labels, values, name, labelOf) {
+  container.replaceChildren();
+  if (!values.some((v) => v > 0)) { container.append(el("div", { class: "empty" }, "Todavía no hay datos en este periodo.")); return; }
+  const width = Math.max(300, container.clientWidth), height = 200, M = { l: 40, r: 8, t: 10, b: 24 };
+  const W = width - M.l - M.r, H = height - M.t - M.b, max = niceMax(Math.max(...values));
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": name });
+  axisY(svg, W, H, M, max);
+  const slot = W / labels.length, bw = Math.max(2, Math.min(28, slot - 2));
+  const cx = (i) => M.l + slot * i + slot / 2;
+  axisX(svg, labels.map(labelOf), cx, height - 6);
+  const color = css("--s1");
+  values.forEach((v, i) => {
+    const h = H * v / max, r = Math.min(4, bw / 2, h);
+    const x0 = cx(i) - bw / 2, y0 = M.t + H - h;
+    if (h > 0) svg.append(svgEl("path", { d: `M${x0} ${M.t + H}V${y0 + r}Q${x0} ${y0} ${x0 + r} ${y0}H${x0 + bw - r}Q${x0 + bw} ${y0} ${x0 + bw} ${y0 + r}V${M.t + H}Z`, fill: color, class: "bar" }));
+    const hit = svgEl("rect", { x: M.l + slot * i, y: M.t, width: slot, height: H, fill: "transparent" });
+    hit.addEventListener("pointermove", (e) => showTip(e, labelOf(labels[i]), [{ color, value: fmt.format(v), label: name }]));
+    hit.addEventListener("pointerleave", hideTip);
+    svg.append(hit);
+  });
+  container.append(svg);
+  table(container, ["Semana del", name], labels.map((d, i) => [d, fmt.format(values[i])]));
+}
+
+// ---------------------------------------------------------------------------------------------- version share (stacked area, 100 %)
+function versionChart(container, days, rows) {
+  container.replaceChildren();
+  if (!rows.length) { container.append(el("div", { class: "empty" }, "Todavía no hay datos en este periodo.")); return; }
+  const totals = {};
+  for (const r of rows) totals[r.version] = (totals[r.version] || 0) + r.users;
+  const cmp = (a, b) => b.split(".").map(Number).reduce((acc, v, i) => acc || v - (a.split(".").map(Number)[i] || 0), 0);
+  // The six most used versions keep their own colour (assigned newest first so a version keeps it); the rest fold into "Otras".
+  const top = Object.keys(totals).sort((a, b) => totals[b] - totals[a]).slice(0, 6).sort(cmp);
+  const keys = Object.keys(totals).length > top.length ? [...top, "Otras"] : top;
+  const colorOf = (k) => k === "Otras" ? css("--other") : css(SERIES[top.indexOf(k)]);
+  const byDay = {};
+  for (const d of days) byDay[d] = {};
+  for (const r of rows) { const k = top.includes(r.version) ? r.version : "Otras"; if (byDay[r.day]) byDay[r.day][k] = (byDay[r.day][k] || 0) + r.users; }
+  const share = days.map((d) => { const t = keys.reduce((s, k) => s + (byDay[d][k] || 0), 0); return keys.map((k) => t ? (byDay[d][k] || 0) / t : 0); });
+  const totalOf = days.map((d) => keys.reduce((s, k) => s + (byDay[d][k] || 0), 0));
+
+  const legend = el("div", { class: "legend" });
+  for (const k of keys) { const s = el("span", {}, k === "Otras" ? "Otras" : "v" + k); s.style.setProperty("--c", colorOf(k)); legend.append(s); }
+  container.append(legend);
+
+  const width = Math.max(320, container.clientWidth), height = 220, M = { l: 40, r: 12, t: 8, b: 24 };
+  const W = width - M.l - M.r, H = height - M.t - M.b;
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": "Versiones en uso" });
+  for (let i = 0; i <= 4; i++) {
+    const y = M.t + H - H * i / 4;
+    const t = svgEl("text", { x: M.l - 8, y: y + 4, "text-anchor": "end" }); t.textContent = i * 25 + " %"; svg.append(t);
+  }
+  const x = (i) => M.l + (days.length === 1 ? W / 2 : W * i / (days.length - 1));
+  axisX(svg, days.map(dayLabel), x, height - 6);
+  const surface = css("--surface-1");
+  const base = days.map(() => 0);
+  keys.forEach((k, ki) => {
+    const lo = base.slice(), hi = base.map((b, i) => b + share[i][ki]);
+    const pts = (arr) => arr.map((v, i) => [x(i), M.t + H - H * v]);
+    const up = pts(hi), down = pts(lo).reverse();
+    const d = "M" + up.map((p) => p.join(" ")).join("L") + "L" + down.map((p) => p.join(" ")).join("L") + "Z";
+    svg.append(svgEl("path", { d, fill: colorOf(k), stroke: surface, "stroke-width": 1.5, "stroke-linejoin": "round" }));
+    hi.forEach((v, i) => base[i] = v);
+  });
+  const cross = svgEl("line", { y1: M.t, y2: M.t + H, stroke: css("--text-secondary"), "stroke-width": 1, visibility: "hidden" });
+  svg.append(cross);
+  const hit = svgEl("rect", { x: M.l, y: M.t, width: W, height: H, fill: "transparent" });
+  hit.addEventListener("pointermove", (evt) => {
+    const r = svg.getBoundingClientRect(), px = (evt.clientX - r.left) * width / r.width;
+    const i = Math.max(0, Math.min(days.length - 1, Math.round((px - M.l) / W * (days.length - 1))));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    showTip(evt, `${dayLabel(days[i])} · ${fmt.format(totalOf[i])} usuarios`, keys.map((k, ki) => ({ color: colorOf(k), value: pct(share[i][ki]), label: k === "Otras" ? "Otras" : "v" + k })).reverse());
+  });
+  hit.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+  svg.append(hit);
+  container.append(svg);
+  table(container, ["Versión", "Usuarios-día", "Parte"], Object.keys(totals).sort(cmp).map((v) => {
+    const all = Object.values(totals).reduce((a, b) => a + b, 0);
+    return ["v" + v, fmt.format(totals[v]), pct(totals[v] / all)];
+  }));
+}
+
+// ---------------------------------------------------------------------------------------------- ranked horizontal bars
+function rankBars(container, rows, opts) {
+  container.replaceChildren();
+  if (!rows.length) { container.append(el("div", { class: "empty" }, "Todavía no hay datos en este periodo.")); return; }
+  const total = opts.total ?? rows.reduce((s, r) => s + r.value, 0);
+  const max = Math.max(...rows.map((r) => r.value), 1);
+  const list = el("div", { class: "bars" });
+  for (const r of rows.slice(0, opts.limit || 12)) {
+    const name = el("div", { class: "name", title: r.name }, r.name);
+    const track = el("div", { class: "track" }), fill = el("div", { class: "fill" });
+    fill.style.width = (100 * r.value / max) + "%";
+    track.append(fill);
+    const num = el("div", { class: "num" }, opts.text(r, total));
+    const tipRows = () => opts.tip(r, total).map((t) => ({ color: css("--s1"), value: t[0], label: t[1] }));
+    for (const node of [name, track, num]) {
+      node.addEventListener("pointermove", (e) => showTip(e, r.name, tipRows()));
+      node.addEventListener("pointerleave", hideTip);
+    }
+    list.append(name, track, num);
+  }
+  container.append(list);
+  table(container, opts.head, rows.map((r) => opts.row(r, total)));
+}
+
+// ---------------------------------------------------------------------------------------------- page
+let current = 30, last = null;
+async function load(days) {
+  document.getElementById("root").classList.add("loading");
+  try {
+    const res = await fetch("/api/stats?days=" + days, { credentials: "same-origin" });
+    if (!res.ok) throw new Error(res.status === 401 ? "Sesión caducada: vuelve a abrir el enlace con la clave." : "Error " + res.status);
+    last = await res.json();
+    render(last);
+  } catch (e) {
+    document.getElementById("sub").textContent = e.message;
+  } finally {
+    document.getElementById("root").classList.remove("loading");
+  }
+}
+
+function render(s) {
+  const days = allDays(s.since, s.days);
+  const today = days[days.length - 1];
+  const map = Object.fromEntries(s.daily.map((r) => [r.day, r]));
+  const dau = days.map((d) => (map[d] && map[d].users) || 0);
+
+  // Weekly active = copies whose first report of that week fell in it; new installs likewise per week.
+  const weeks = [...new Set(days.map(weekStart))];
+  const wau = weeks.map((w) => days.filter((d) => weekStart(d) === w).reduce((a, d) => a + ((map[d] && map[d].new_week) || 0), 0));
+  const fresh = weeks.map((w) => days.filter((d) => weekStart(d) === w).reduce((a, d) => a + ((map[d] && map[d].first_run) || 0), 0));
+  const month = today.slice(0, 7);
+  const mau = days.filter((d) => d.startsWith(month)).reduce((a, d) => a + ((map[d] && map[d].new_month) || 0), 0);
+  const installs = fresh.reduce((a, b) => a + b, 0);
+  const latest = s.versions.filter((r) => r.day === today).sort((a, b) => b.users - a.users)[0];
+
+  const tiles = document.getElementById("tiles");
+  tiles.replaceChildren();
+  const tile = (label, value, note) => { const t = el("div", { class: "tile" }); t.append(el("div", { class: "label" }, label), el("div", { class: "value" }, value), el("div", { class: "note" }, note)); tiles.append(t); };
+  tile("Activos hoy", fmt.format(dau[dau.length - 1]), dayLabel(today) + " (UTC)");
+  tile("Activos esta semana", fmt.format(wau[wau.length - 1] || 0), "desde el lunes");
+  tile("Activos este mes", fmt.format(mau), new Date(today + "T00:00:00Z").toLocaleDateString("es-ES", { month: "long", year: "numeric", timeZone: "UTC" }));
+  tile("Instalaciones nuevas", fmt.format(installs), "en el periodo elegido");
+  tile("Versión más usada hoy", latest ? "v" + latest.version : "—", latest ? fmt.format(latest.users) + " usuarios" : "sin datos hoy");
+
+  document.getElementById("sub").textContent = `Del ${dayLabel(s.since)} al ${dayLabel(today)}`;
+  lineChart(document.getElementById("c-daily"), days, dau, "Usuarios activos");
+  barChart(document.getElementById("c-weekly"), weeks, wau, "Usuarios activos", dayLabel);
+  barChart(document.getElementById("c-new"), weeks, fresh, "Instalaciones nuevas", dayLabel);
+  versionChart(document.getElementById("c-versions"), days, s.versions);
+
+  // Without ids, "how many people used it" is not knowable; the share of active days that used it is.
+  const userDays = Math.max(1, dau.reduce((a, b) => a + b, 0));
+  rankBars(document.getElementById("c-features"), s.features.map((f) => ({ name: FEATURE_NAMES[f.k] || f.k, value: f.users, uses: f.uses })), {
+    limit: 40, total: userDays,
+    text: (r, t) => `${pct(Math.min(1, r.value / t))} · ${fmt.format(r.uses)} usos`,
+    tip: (r, t) => [[pct(Math.min(1, r.value / t)), "de los días de uso"], [fmt.format(r.value), "días de uso con ella"], [fmt.format(r.uses), "usos"]],
+    head: ["Función", "Días de uso", "Usos"], row: (r) => [r.name, fmt.format(r.value), fmt.format(r.uses)],
+  });
+  const simple = (id, rows, nameOf) => rankBars(document.getElementById(id), rows.map((r) => ({ name: nameOf(r.k), value: r.users })), {
+    text: (r, t) => pct(r.value / t), tip: (r, t) => [[fmt.format(r.value), "usuarios-día"], [pct(r.value / t), "del total"]],
+    head: ["", "Usuarios-día", "Parte"], row: (r, t) => [r.name, fmt.format(r.value), pct(r.value / t)],
+  });
+  simple("c-os", s.os, (k) => k === "?" ? "Desconocido" : "Windows " + k.replace(" ", " · compilación "));
+  simple("c-countries", s.countries, country);
+  simple("c-langs", s.langs, (k) => LANGS[k] || (k === "?" ? "Desconocido" : k));
+  simple("c-installs", s.installs, (k) => INSTALLS[k] || k);
+}
+
+document.querySelectorAll(".filters button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll(".filters button").forEach((o) => o.setAttribute("aria-pressed", o === b ? "true" : "false"));
+  current = Number(b.dataset.days);
+  load(current);
+}));
+let resizeTimer;
+addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => last && render(last), 150); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => last && render(last));
+load(current);
+</script>
+</body>
+</html>

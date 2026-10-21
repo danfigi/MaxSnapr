@@ -79,7 +79,10 @@ Al capturar: **arrastra** para elegir una zona, **haz clic** en una ventana o pu
 Sí, para uso personal y profesional, sin anuncios ni límites. Si te resulta útil y quieres apoyar su desarrollo, puedes [invitarme a un café](https://buymeacoffee.com/danfigi) ☕. Es totalmente voluntario.
 
 **¿Envía mis capturas o datos a algún sitio?**
-No. No tiene cuentas, publicidad ni telemetría. Todo se queda en tu equipo, y solo se comparte lo que tú decidas compartir. Lo único que hace por su cuenta es comprobar una vez al día, de forma anónima, si hay una versión nueva; puedes desactivarlo en *Preferencias*.
+No. Tus capturas, vídeos y textos nunca salen de tu equipo salvo que tú los compartas, y no hay cuentas ni publicidad. Por su cuenta, MaxSnapr solo hace dos cosas, las dos anónimas y desactivables en *Preferencias*:
+
+- Comprueba una vez al día si hay una versión nueva.
+- Envía una vez al día un **recuento de uso anónimo**, para saber cuánta gente lo usa y qué funciones conviene mejorar. Incluye la versión de MaxSnapr y de Windows, el idioma, el país (lo deduce el servidor sin guardar tu dirección IP), si es la versión instalada o la portable, y cuántas veces se usó cada función (por ejemplo, «4 capturas, 2 flechas»). No lleva ningún identificador, así que nadie puede saber quién eres ni seguir tu uso. Puedes desactivarlo en la bienvenida o en *Preferencias*.
 
 **¿Dónde se guardan mis capturas?**
 En `Documentos\MaxSnapr\Biblioteca`. En *Preferencias › Biblioteca* puedes cambiar la carpeta y hacer o restaurar copias de seguridad.

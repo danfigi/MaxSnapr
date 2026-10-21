@@ -1,3 +1,4 @@
+using MaxSnapr.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -231,6 +232,19 @@ public sealed class CreateTool : SelectTool
         _origin = p;
         _creating = Create(p);
         Doc.Add(_creating);
+        Usage.Count(_kind switch
+        {
+            ToolKind.Arrow or ToolKind.Line => "editor.arrow",
+            ToolKind.Text => "editor.text",
+            ToolKind.Callout => "editor.callout",
+            ToolKind.Shape => "editor.shape",
+            ToolKind.Step => "editor.step",
+            ToolKind.Pen or ToolKind.Highlighter => "editor.pen",
+            ToolKind.Blur => "editor.blur",
+            ToolKind.Magnify => "editor.magnify",
+            ToolKind.Spotlight => "editor.spotlight",
+            _ => "editor.stamp",
+        });
         Canvas.Select(_creating);
     }
 
@@ -393,6 +407,7 @@ public sealed class CropTool : ToolBase
         if (r.Width < 1 || r.Height < 1 || (r.Width == Doc.Width && r.Height == Doc.Height)) return;
         Doc.Checkpoint();
         Doc.ReplaceBase(RasterOps.Crop(Doc.Base, r), new Vector(-r.X, -r.Y));
+        Usage.Count("editor.crop");
         Reset();
     }
 

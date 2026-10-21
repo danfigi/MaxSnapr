@@ -120,6 +120,7 @@ public sealed class CaptureService
             }
             if (rect is not Int32Rect r || r.Width < 1 || r.Height < 1) return;
             captured = r;
+            CountCapture(preset, action, isRepeat);
 
             if (action == CaptureAction.Video)
             {
@@ -312,6 +313,26 @@ public sealed class CaptureService
         }
         catch { }
         return (w.Title, app, url);
+    }
+
+    /// <summary>Anonymous feature counts (see Services/Usage.cs); only the kind of capture, never its content.</summary>
+    static void CountCapture(CapturePreset preset, CaptureAction action, bool isRepeat)
+    {
+        if (isRepeat) Usage.Count("capture.repeat");
+        if (action == CaptureAction.Video) return; // counted when the recording starts
+        if (action == CaptureAction.GrabText) { Usage.Count("ocr"); return; }
+        Usage.Count("capture");
+        Usage.Count(action switch
+        {
+            CaptureAction.Scroll => "capture.scrolling",
+            CaptureAction.Panoramic => "capture.panoramic",
+            _ => preset.Selection switch
+            {
+                CaptureSelectionMode.Window or CaptureSelectionMode.ActiveWindow or CaptureSelectionMode.ResizedWindow => "capture.window",
+                CaptureSelectionMode.FullScreen or CaptureSelectionMode.AllScreens => "capture.fullscreen",
+                _ => "capture.region",
+            },
+        });
     }
 
     static async Task GrabTextAsync(BitmapSource image)

@@ -56,7 +56,11 @@ public sealed class WelcomeWindow : DialogWindow
             row.Children.Add(new StackPanel { Children = { new TextBlock { Text = t, FontWeight = FontWeights.SemiBold }, new TextBlock { Text = x, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)Application.Current.FindResource("Fg.Secondary") } } });
             Body.Children.Add(row);
         }
-        var dont = new CheckBox { Content = "No volver a mostrar", Margin = new Thickness(0, 16, 0, 0) };
+        var usage = new CheckBox { Content = "Ayudar a mejorar MaxSnapr con un recuento de uso anónimo", IsChecked = App.Settings.ShareUsage, Margin = new Thickness(0, 18, 0, 0) };
+        usage.Click += (_, _) => { App.Settings.ShareUsage = usage.IsChecked == true; if (!App.Settings.ShareUsage) Usage.ClearPending(); App.Settings.Save(); };
+        Body.Children.Add(usage);
+        Body.Children.Add(new TextBlock { Text = SettingsWindow.UsageExplanation + " Puede cambiarlo cuando quiera en Preferencias.", TextWrapping = TextWrapping.Wrap, FontSize = 12, Margin = new Thickness(24, 2, 0, 0), Foreground = (Brush)Application.Current.FindResource("Fg.Secondary") });
+        var dont = new CheckBox { Content = "No volver a mostrar", Margin = new Thickness(0, 12, 0, 0) };
         Body.Children.Add(dont);
         var start = new Button { Content = "Empezar", Style = (Style)Application.Current.FindResource("AccentButton"), MinWidth = 110, IsDefault = true, IsCancel = true };
         start.Click += (_, _) => { if (dont.IsChecked == true) { App.Settings.ShowWelcome = false; App.Settings.Save(); } Close(); };
@@ -290,6 +294,7 @@ public sealed class MobileReceiveWindow : DialogWindow
                         {
                             var ext = Path.GetExtension(path).ToLowerInvariant();
                             var item = ext is ".mp4" ? await LibraryStore.Instance.AddMediaAsync(path, "Móvil") : LibraryStore.Instance.Import(path);
+                            Usage.Count("mobile_receive");
                             item.SourceApp = "Móvil";
                             item.InTray = true;
                             LibraryStore.Instance.Save();
