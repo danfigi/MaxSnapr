@@ -2,6 +2,10 @@
 
 Cada versión tiene su apartado `## X.Y.Z`. Al publicar, ese texto aparece en la página de descargas y en la ventana «Hay una versión nueva» de la aplicación.
 
+## 1.2.3
+
+- **Actualizar es ahora directo**: tras pulsar *Descargar e instalar*, MaxSnapr se cierra, se actualiza y se vuelve a abrir solo, con un aviso de que ya tienes la versión nueva. Antes se quedaba cerrado al terminar.
+
 ## 1.2.2
 
 - **El widget del borde queda siempre centrado arriba en la pantalla principal**, tengas las pantallas que tengas y en la posición que sea, también con la barra de tareas a un lado o arriba.
