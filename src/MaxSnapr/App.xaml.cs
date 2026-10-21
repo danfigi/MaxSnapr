@@ -126,10 +126,18 @@ public partial class App : Application
         UpdateClipboardWatcher();
         Updates.ScheduleStartupCheck();
         bool trayOnly = e.Args.Contains("--tray");
+        // Reopened by the installer after updating itself from Help › Check for updates.
+        bool updated = e.Args.Contains("--updated");
         var file = e.Args.FirstOrDefault(a => !a.StartsWith("--"));
         if (file != null) ShowEditor().OpenFile(file);
         else if (!trayOnly) ShowEditor();
-        if (Settings.ShowWelcome && !trayOnly && file == null) Dispatcher.BeginInvoke(() => new WelcomeWindow { Owner = Editor }.ShowDialog(), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        if (updated)
+        {
+            Settings.SkippedVersion = null;
+            Settings.Save();
+            Dispatcher.BeginInvoke(() => Notify("MaxSnapr actualizado", $"Ya tienes la versión {Updates.CurrentVersion.ToString(3)}."), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+        else if (Settings.ShowWelcome && !trayOnly && file == null) Dispatcher.BeginInvoke(() => new WelcomeWindow { Owner = Editor }.ShowDialog(), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
     void ListenForActivation()

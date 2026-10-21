@@ -59,9 +59,22 @@ Name: "{autoprograms}\MaxSnapr"; Filename: "{app}\MaxSnapr.exe"
 Name: "{autodesktop}\MaxSnapr"; Filename: "{app}\MaxSnapr.exe"; Tasks: desktopicon
 
 [Run]
+; Normal install: a ticked "Open MaxSnapr" box on the last page.
 Filename: "{app}\MaxSnapr.exe"; Description: "{cm:LaunchProgram,MaxSnapr}"; Flags: nowait postinstall skipifsilent
+; Update from inside the app (silent, /UPDATE): open it again by itself, as the user had it.
+Filename: "{app}\MaxSnapr.exe"; Parameters: "--updated"; Flags: nowait runasoriginaluser; Check: IsAppUpdate
 
 [Code]
+// True when the app launched this installer to update itself (it passes /UPDATE).
+function IsAppUpdate: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 1 to ParamCount do
+    if CompareText(ParamStr(I), '/UPDATE') = 0 then Result := True;
+end;
+
 // The app adds these per-user entries only when the user turns the options on, so the installer
 // never sees them: remove them explicitly. Settings, captures and recordings are kept.
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);

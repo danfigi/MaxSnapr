@@ -119,7 +119,8 @@ public static class Updates
     /// <summary>Starts the verified installer and lets it close this instance (it asks before replacing a running app).</summary>
     public static void RunInstaller(string path)
     {
-        Process.Start(new ProcessStartInfo(path, "/SILENT /SP- /NOCANCEL /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS") { UseShellExecute = true });
+        // /UPDATE makes the installer open MaxSnapr again when it finishes (see [Run] in installer/MaxSnapr.iss).
+        Process.Start(new ProcessStartInfo(path, "/SILENT /SP- /NOCANCEL /CLOSEAPPLICATIONS /NORESTART /UPDATE") { UseShellExecute = true });
         App.Current.Quit();
     }
 
