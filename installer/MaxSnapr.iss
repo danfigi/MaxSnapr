@@ -65,14 +65,15 @@ Filename: "{app}\MaxSnapr.exe"; Description: "{cm:LaunchProgram,MaxSnapr}"; Flag
 Filename: "{app}\MaxSnapr.exe"; Parameters: "--updated"; Flags: nowait runasoriginaluser; Check: IsAppUpdate
 
 [Code]
-// True when the app launched this installer to update itself (it passes /UPDATE).
+// True when the app launched this installer to update itself: 1.2.3 and later pass /UPDATE; 1.1.0–1.2.2
+// passed /RESTARTAPPLICATIONS, which cannot reopen an app that has already closed itself.
 function IsAppUpdate: Boolean;
 var
   I: Integer;
 begin
   Result := False;
   for I := 1 to ParamCount do
-    if CompareText(ParamStr(I), '/UPDATE') = 0 then Result := True;
+    if (CompareText(ParamStr(I), '/UPDATE') = 0) or (CompareText(ParamStr(I), '/RESTARTAPPLICATIONS') = 0) then Result := True;
 end;
 
 // The app adds these per-user entries only when the user turns the options on, so the installer
