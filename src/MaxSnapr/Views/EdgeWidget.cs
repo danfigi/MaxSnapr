@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -142,10 +143,18 @@ public sealed class EdgeWidget : Window
     {
         MonitorInfo? primary = null;
         foreach (var m in monitors) if (m.Primary) primary = m;
-        primary ??= monitors.Count > 0 ? monitors[0] : new MonitorInfo(new Int32Rect(0, 0, 1920, 1080), new Int32Rect(0, 0, 1920, 1040), 1, "", true);
+        // Windows always places the primary screen at (0,0); fall back to the screen that contains it.
+        primary ??= monitors.FirstOrDefault(m => m.Bounds.X <= 0 && m.Bounds.Y <= 0 && m.Bounds.X + m.Bounds.Width > 0 && m.Bounds.Y + m.Bounds.Height > 0)
+            ?? (monitors.Count > 0 ? monitors[0] : new MonitorInfo(new Int32Rect(0, 0, 1920, 1080), new Int32Rect(0, 0, 1920, 1040), 1, "", true));
+        var screen = primary.Bounds;
         var wa = primary.WorkArea;
         int w = Math.Max(1, (int)Math.Round(width)), h = Math.Max(1, (int)Math.Round(height));
-        return new Int32Rect(wa.X + (wa.Width - w) / 2, wa.Y, w, h);
+        // Centred on the whole screen, so a taskbar on the left or right does not shift it. Vertically it sits
+        // just below a taskbar at the top, and stays inside the screen even if the work area is odd.
+        int x = screen.X + (screen.Width - w) / 2;
+        x = Math.Clamp(x, wa.X, Math.Max(wa.X, wa.X + wa.Width - w));
+        int y = Math.Max(screen.Y, wa.Y);
+        return new Int32Rect(x, y, w, h);
     }
 
     /// <summary>What the placement is computed from (diagnostics).</summary>

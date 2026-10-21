@@ -756,6 +756,86 @@ public static partial class SelfTest
             $"oficina → ({r.X},{r.Y}), barra arriba → ({r2.X},{r2.Y}), pantalla principal real {p?.Bounds}");
     }
 
+    /// <summary>
+    /// Any number and arrangement of screens: the widget must always be centred at the top of the main screen.
+    /// Covers common setups and 5,000 random ones (1–6 screens, any position, resolution, scale and taskbar side).
+    /// </summary>
+    static void ScreenLayoutsCheck()
+    {
+        static MonitorInfo M(int x, int y, int w, int h, bool primary, string taskbar = "bottom", int bar = 48, double scale = 1)
+        {
+            var work = taskbar switch
+            {
+                "top" => new Int32Rect(x, y + bar, w, h - bar),
+                "left" => new Int32Rect(x + bar, y, w - bar, h),
+                "right" => new Int32Rect(x, y, w - bar, h),
+                _ => new Int32Rect(x, y, w, h - bar),
+            };
+            return new MonitorInfo(new Int32Rect(x, y, w, h), work, scale, primary ? "P" : "S", primary);
+        }
+        var failures = new List<string>();
+        int cases = 0;
+        void Verify(string name, IReadOnlyList<MonitorInfo> mons, double w = 90, double h = 11)
+        {
+            cases++;
+            var r = EdgeWidget.Place(mons, w, h);
+            var p = mons.First(m => m.Primary);
+            var b = p.Bounds;
+            int cx = r.X + r.Width / 2, mid = b.X + b.Width / 2;
+            bool inside = r.X >= b.X && r.X + r.Width <= b.X + b.Width && r.Y >= b.Y && r.Y + r.Height <= b.Y + b.Height;
+            bool centred = Math.Abs(cx - mid) <= 1 || (p.WorkArea.X > b.X && r.X == p.WorkArea.X) || (p.WorkArea.X + p.WorkArea.Width < b.X + b.Width && r.X + r.Width == p.WorkArea.X + p.WorkArea.Width);
+            bool top = r.Y == Math.Max(b.Y, p.WorkArea.Y);
+            bool onAnother = mons.Where(m => !m.Primary).Any(m => cx >= m.Bounds.X && cx < m.Bounds.X + m.Bounds.Width && r.Y >= m.Bounds.Y && r.Y < m.Bounds.Y + m.Bounds.Height);
+            if (!inside || !centred || !top || onAnother) failures.Add($"{name}: widget ({r.X},{r.Y}) en principal {b}");
+        }
+
+        // Common setups, with the taskbar on each side.
+        foreach (var bar in new[] { "bottom", "top", "left", "right" })
+        {
+            Verify($"una pantalla, barra {bar}", new[] { M(0, 0, 1920, 1080, true, bar) });
+            Verify($"portátil + monitor a la derecha, barra {bar}", new[] { M(0, 0, 1920, 1080, true, bar), M(1920, 0, 2560, 1440, false) });
+            Verify($"monitor a la izquierda, barra {bar}", new[] { M(-2560, 0, 2560, 1440, false), M(0, 0, 1920, 1080, true, bar) });
+            Verify($"monitor encima, barra {bar}", new[] { M(0, -1440, 2560, 1440, false), M(0, 0, 1920, 1080, true, bar) });
+            Verify($"monitor debajo, barra {bar}", new[] { M(0, 0, 1920, 1080, true, bar), M(-320, 1080, 2560, 1440, false) });
+            Verify($"tres en fila, principal en medio, barra {bar}", new[] { M(-1920, 0, 1920, 1080, false), M(0, 0, 2560, 1440, true, bar), M(2560, 0, 1920, 1080, false) });
+            Verify($"vertical a la izquierda, barra {bar}", new[] { M(-1080, -420, 1080, 1920, false), M(0, 0, 1920, 1080, true, bar) });
+            Verify($"oficina (150 % a la izquierda y más abajo), barra {bar}", new[] { M(-1920, 678, 1920, 1200, false, scale: 1.5), M(0, 0, 1920, 1080, true, bar) });
+            Verify($"4K al 150 %, barra {bar}", new[] { M(0, 0, 3840, 2160, true, bar, 72, 1.5) }, 135, 17);
+        }
+
+        // Random layouts: screens placed edge to edge around the primary one, like Windows' display settings.
+        var rnd = new Random(20261021);
+        var sizes = new[] { (1366, 768), (1920, 1080), (1920, 1200), (2560, 1440), (3440, 1440), (3840, 2160), (1080, 1920), (1440, 2560), (1280, 1024) };
+        var bars = new[] { "bottom", "top", "left", "right" };
+        for (int i = 0; i < 5000; i++)
+        {
+            var (pw, ph) = sizes[rnd.Next(sizes.Length)];
+            var list = new List<MonitorInfo> { M(0, 0, pw, ph, true, bars[rnd.Next(4)], rnd.Next(30, 80), new[] { 1, 1.25, 1.5, 1.75, 2 }[rnd.Next(5)]) };
+            int extra = rnd.Next(0, 6);
+            for (int k = 0; k < extra; k++)
+            {
+                var anchor = list[rnd.Next(list.Count)].Bounds;
+                var (w, h) = sizes[rnd.Next(sizes.Length)];
+                int side = rnd.Next(4);
+                int x = side switch { 0 => anchor.X + anchor.Width, 1 => anchor.X - w, _ => anchor.X + rnd.Next(-w + 1, anchor.Width) };
+                int y = side switch { 2 => anchor.Y + anchor.Height, 3 => anchor.Y - h, _ => anchor.Y + rnd.Next(-h + 1, anchor.Height) };
+                var cand = new Int32Rect(x, y, w, h);
+                bool overlaps = list.Any(m => cand.X < m.Bounds.X + m.Bounds.Width && cand.X + cand.Width > m.Bounds.X && cand.Y < m.Bounds.Y + m.Bounds.Height && cand.Y + cand.Height > m.Bounds.Y);
+                if (!overlaps) list.Add(M(x, y, w, h, false, bars[rnd.Next(4)]));
+            }
+            var order = list.OrderBy(_ => rnd.Next()).ToList(); // Windows does not list the primary screen first
+            double scale = order.First(m => m.Primary).Scale;
+            Verify($"aleatoria {i} ({list.Count} pantallas)", order, Math.Round(90 * scale), Math.Round(11 * scale));
+        }
+
+        // Without any screen flagged primary (driver glitch while docking), the one at (0,0) is used.
+        var none = EdgeWidget.Place(new[] { M(-1920, 0, 1920, 1080, false), M(0, 0, 1920, 1080, false) }, 90, 11);
+        bool fallback = none.X == 915 && none.Y == 0;
+
+        Check("Widget del borde: siempre centrado arriba en la pantalla principal (cualquier disposición)", failures.Count == 0 && fallback,
+            failures.Count == 0 ? $"{cases} disposiciones, de 1 a 6 pantallas{(fallback ? "" : "; sin pantalla principal: mal")}" : string.Join("; ", failures.Take(4)));
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -800,5 +880,6 @@ public static partial class SelfTest
         MobileAddressCheck(outDir);
         UpdateChecks(outDir);
         DockLayoutCheck();
+        ScreenLayoutsCheck();
     }
 }

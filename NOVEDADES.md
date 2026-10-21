@@ -2,6 +2,10 @@
 
 Cada versión tiene su apartado `## X.Y.Z`. Al publicar, ese texto aparece en la página de descargas y en la ventana «Hay una versión nueva» de la aplicación.
 
+## 1.2.2
+
+- **El widget del borde queda siempre centrado arriba en la pantalla principal**, tengas las pantallas que tengas y en la posición que sea, también con la barra de tareas a un lado o arriba.
+
 ## 1.2.1
 
 - **El widget del borde se ve siempre en la pantalla principal**, también con el portátil conectado a una base o dock con una pantalla a la izquierda o por encima. Antes podía quedarse fuera de la vista.
