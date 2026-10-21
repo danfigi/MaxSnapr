@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Interop;
@@ -74,6 +75,21 @@ public static class ScreenCapturer
             return true;
         }, IntPtr.Zero);
         return list;
+    }
+
+    /// <summary>
+    /// Monitors in real screen coordinates, the ones window placement uses. <see cref="GetMonitors"/> is
+    /// relative to the virtual desktop instead (for the capture overlay); they differ as soon as a screen
+    /// sits to the left of or above the main one.
+    /// </summary>
+    public static IReadOnlyList<MonitorInfo> GetMonitorsOnScreen()
+    {
+        var vs = VirtualScreen;
+        return GetMonitors().Select(m => m with
+        {
+            Bounds = new Int32Rect(m.Bounds.X + vs.X, m.Bounds.Y + vs.Y, m.Bounds.Width, m.Bounds.Height),
+            WorkArea = new Int32Rect(m.WorkArea.X + vs.X, m.WorkArea.Y + vs.Y, m.WorkArea.Width, m.WorkArea.Height),
+        }).ToList();
     }
 
     public static Int32Rect VirtualScreen => new(GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN),

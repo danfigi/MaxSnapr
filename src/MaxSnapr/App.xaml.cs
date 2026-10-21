@@ -59,6 +59,24 @@ public partial class App : Application
             return;
         }
         // Diagnostic: checks that cameras and microphones open, recording only sizes and levels.
+        // Diagnostic: shows the edge widget for a moment and reports how its position is computed.
+        if (e.Args.Length >= 2 && e.Args[0] == "--probe-widget")
+        {
+            Settings = AppSettings.Load();
+            Settings.ShowEdgeWidget = true;
+            var w = new EdgeWidget();
+            w.Show();
+            Dispatcher.BeginInvoke(async () =>
+            {
+                await Task.Delay(1500);
+                var before = w.Describe();
+                var fixedWhy = w.EnsureVisible();
+                await Task.Delay(500);
+                System.IO.File.WriteAllText(e.Args[1], before + $"vigilante: {fixedWhy ?? "sin cambios"} (omitido: {w.LastSkip ?? "no"})" + Environment.NewLine + w.Describe());
+                Shutdown(0);
+            });
+            return;
+        }
         if (e.Args.Length >= 2 && e.Args[0] == "--probe-devices")
         {
             Dispatcher.BeginInvoke(async () =>

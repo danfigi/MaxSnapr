@@ -129,14 +129,36 @@ public sealed class EdgeWidget : Window
     /// </summary>
     internal Int32Rect ExpectedBounds()
     {
-        MonitorInfo? primary = null;
-        foreach (var m in ScreenCapturer.GetMonitors()) if (m.Primary) primary = m;
-        primary ??= new MonitorInfo(new Int32Rect(0, 0, 1920, 1080), new Int32Rect(0, 0, 1920, 1040), 1, "", true);
-        var wa = primary.WorkArea;
         var dpi = VisualTreeHelper.GetDpi(this);
         var content = ContentSize();
-        int w = Math.Max(1, (int)Math.Round(content.Width * dpi.DpiScaleX)), h = Math.Max(1, (int)Math.Round(content.Height * dpi.DpiScaleY));
+        return Place(ScreenCapturer.GetMonitorsOnScreen(), content.Width * dpi.DpiScaleX, content.Height * dpi.DpiScaleY);
+    }
+
+    /// <summary>
+    /// Centred on the top edge of the primary screen's work area. Monitors must be in screen coordinates:
+    /// with a screen to the left of the main one, virtual-desktop coordinates would push the widget off screen.
+    /// </summary>
+    internal static Int32Rect Place(System.Collections.Generic.IReadOnlyList<MonitorInfo> monitors, double width, double height)
+    {
+        MonitorInfo? primary = null;
+        foreach (var m in monitors) if (m.Primary) primary = m;
+        primary ??= monitors.Count > 0 ? monitors[0] : new MonitorInfo(new Int32Rect(0, 0, 1920, 1080), new Int32Rect(0, 0, 1920, 1040), 1, "", true);
+        var wa = primary.WorkArea;
+        int w = Math.Max(1, (int)Math.Round(width)), h = Math.Max(1, (int)Math.Round(height));
         return new Int32Rect(wa.X + (wa.Width - w) / 2, wa.Y, w, h);
+    }
+
+    /// <summary>What the placement is computed from (diagnostics).</summary>
+    internal string Describe()
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var m in ScreenCapturer.GetMonitorsOnScreen())
+            sb.AppendLine($"pantalla {m.Device} principal={m.Primary} monitor={m.Bounds} trabajo={m.WorkArea} escala={m.Scale:0.##}");
+        var dpi = VisualTreeHelper.GetDpi(this);
+        NativeMethods.GetWindowRect(_hwnd, out var r);
+        sb.AppendLine($"escala WPF={dpi.DpiScaleX:0.##} contenido={ContentSize()} actual={ActualWidth}x{ActualHeight}");
+        sb.AppendLine($"esperado={ExpectedBounds()} real=({r.Left},{r.Top}) {r.Width}x{r.Height}");
+        return sb.ToString();
     }
 
     /// <summary>Size the tab needs, in device-independent units, whatever size the window currently has.</summary>
@@ -267,7 +289,7 @@ public sealed class EdgeWidget : Window
         if (cls.ToString() is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd") return false;
         GetWindowThreadProcessId(fg, out uint pid);
         if (pid == (uint)Environment.ProcessId) return false;
-        foreach (var m in ScreenCapturer.GetMonitors())
+        foreach (var m in ScreenCapturer.GetMonitorsOnScreen())
         {
             var b = m.Bounds;
             if (r.Left <= b.X && r.Top <= b.Y && r.Right >= b.X + b.Width && r.Bottom >= b.Y + b.Height && m.Primary) return true;

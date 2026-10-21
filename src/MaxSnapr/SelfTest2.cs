@@ -570,7 +570,10 @@ public static partial class SelfTest
                 var e = w.ExpectedBounds();
                 bool topmost = (Native.NativeMethods.GetWindowLong(h, Native.NativeMethods.GWL_EXSTYLE) & 0x8) != 0;
                 bool cloaked = Native.NativeMethods.DwmGetWindowAttribute(h, 14, out int c, sizeof(int)) == 0 && c != 0;
-                return topmost && !cloaked && Math.Abs(r.Left - e.X) <= 2 && Math.Abs(r.Top - e.Y) <= 2
+                // "Where it should be" must also be on a real screen: comparing with a wrong expectation hides bugs.
+                var centre = new Native.NativeMethods.POINT { X = (r.Left + r.Right) / 2, Y = (r.Top + r.Bottom) / 2 };
+                bool onScreen = Native.NativeMethods.MonitorFromPoint(centre, 0 /*MONITOR_DEFAULTTONULL*/) != IntPtr.Zero;
+                return topmost && !cloaked && onScreen && Math.Abs(r.Left - e.X) <= 2 && Math.Abs(r.Top - e.Y) <= 2
                     && Math.Abs(r.Width - e.Width) <= 2 && Math.Abs(r.Height - e.Height) <= 2;
             }
 
@@ -724,6 +727,35 @@ public static partial class SelfTest
             $"nueva {found}, igual o anterior ignorada {same}, preliminar ignorada {pre}, otro servidor rechazado {foreignHost}, otro repositorio rechazado {foreignRepo}, http rechazado {http}, solo el repositorio oficial {former}, novedades {notesOk}");
     }
 
+    /// <summary>
+    /// Laptop on a dock: a 150 % screen to the left of (and lower than) the 100 % main screen, as at the office.
+    /// The widget must land on the main screen, and the screen list must be in real screen coordinates.
+    /// </summary>
+    static void DockLayoutCheck()
+    {
+        var office = new[]
+        {
+            new MonitorInfo(new Int32Rect(-1920, 678, 1920, 1200), new Int32Rect(-1920, 678, 1920, 1128), 1.5, "LATERAL", false),
+            new MonitorInfo(new Int32Rect(0, 0, 1920, 1080), new Int32Rect(0, 0, 1920, 1032), 1, "PRINCIPAL", true),
+        };
+        var r = EdgeWidget.Place(office, 90, 11);
+        bool onMain = r.X == 915 && r.Y == 0;
+        var right = new[]
+        {
+            new MonitorInfo(new Int32Rect(0, 0, 2560, 1440), new Int32Rect(0, 40, 2560, 1400), 1.25, "PRINCIPAL", true),
+            new MonitorInfo(new Int32Rect(2560, 0, 1920, 1080), new Int32Rect(2560, 0, 1920, 1040), 1, "DERECHA", false),
+        };
+        var r2 = EdgeWidget.Place(right, 112, 14);
+        bool taskbarTop = r2.X == 1224 && r2.Y == 40;
+
+        // This computer's real screens: the primary one must contain (0,0), as Windows defines it.
+        var real = Capture.ScreenCapturer.GetMonitorsOnScreen();
+        var p = real.FirstOrDefault(m => m.Primary);
+        bool realOk = p != null && p.Bounds.X <= 0 && p.Bounds.Y <= 0 && p.Bounds.X + p.Bounds.Width > 0 && p.Bounds.Y + p.Bounds.Height > 0;
+        Check("Widget del borde con pantallas a la izquierda o por encima (portátil en dock)", onMain && taskbarTop && realOk,
+            $"oficina → ({r.X},{r.Y}), barra arriba → ({r2.X},{r2.Y}), pantalla principal real {p?.Bounds}");
+    }
+
     static async Task ExtraWindowShots(string outDir)
     {
         var imgs = LibraryStore.Instance.Items.Where(i => !i.IsMedia).Take(3).ToList();
@@ -767,5 +799,6 @@ public static partial class SelfTest
         NamingCheck();
         MobileAddressCheck(outDir);
         UpdateChecks(outDir);
+        DockLayoutCheck();
     }
 }

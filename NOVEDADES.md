@@ -2,6 +2,10 @@
 
 Cada versión tiene su apartado `## X.Y.Z`. Al publicar, ese texto aparece en la página de descargas y en la ventana «Hay una versión nueva» de la aplicación.
 
+## 1.2.1
+
+- **El widget del borde se ve siempre en la pantalla principal**, también con el portátil conectado a una base o dock con una pantalla a la izquierda o por encima. Antes podía quedarse fuera de la vista.
+
 ## 1.2.0
 
 - **Apoyar MaxSnapr**: si te resulta útil, ahora puedes invitarme a un café desde *Ayuda › Apoyar MaxSnapr* o desde el icono de la bandeja. Es totalmente voluntario y la aplicación sigue completa y gratis.
