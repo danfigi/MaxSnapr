@@ -32,7 +32,7 @@
   <ItemGroup>
     <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
     <PackageReference Include="QRCoder" Version="1.8.1" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.31.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.32.0" />
   </ItemGroup>
   <ItemGroup>
     <!-- Person segmentation for camera backgrounds (PP-HumanSeg, Apache-2.0; see docs/TERCEROS.md). -->
